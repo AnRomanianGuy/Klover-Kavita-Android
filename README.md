@@ -340,7 +340,7 @@ including commercially, as long as you keep the license and copyright notices; i
 ---
 
 <sub>Made by <a href="https://github.com/AnRomanianGuy">AnRomanianGuy</a>, with AI assistance. Klover is not affiliated with, endorsed by or supported by the Kavita project or MangaDex. Kavita is a project of its
-own contributors; the name is used here only to say what the app works with.</sub>
+own contributors; the name is used here only to say what the app works with. Special thanks to usedcvnt for the ultraviolet album that powered all of the night coding.</sub>
 
 <!--
 GIFs in docs/media/ (recorded on a Pixel 9 Pro Fold with demo content whose art and text are all generated for this purpose,
