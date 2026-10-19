@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- What the window shows before the app has drawn anything (the launch screen and any gap after it): the colour of the app's own
+         page - the same wallpaper colours the app themes itself with - so opening the app is the app appearing and not a sheet of another
+         colour being replaced by it. -->
+    <color name="launch_background">@android:color/system_background_light</color>
+</resources>

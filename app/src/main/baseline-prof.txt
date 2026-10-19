@@ -1,0 +1,30 @@
+# Baseline profile: the code a typical session runs, listed by package so Android compiles it ahead of time when
+# the app is installed (and on first idle). Without it the first screens, animations and scrolls run interpreted /
+# JIT-compiled on the fly, which is what shows up as stutter right after opening the app.
+# H = hot, S = startup, P = post-startup; the wildcards cover whole packages.
+
+HSPLandroidx/compose/**;->**(**)**
+HSPLandroidx/activity/**;->**(**)**
+HSPLandroidx/lifecycle/**;->**(**)**
+HSPLandroidx/navigation3/**;->**(**)**
+HSPLandroidx/savedstate/**;->**(**)**
+HSPLandroidx/datastore/**;->**(**)**
+HSPLandroidx/window/**;->**(**)**
+HSPLandroidx/core/**;->**(**)**
+HSPLcoil3/**;->**(**)**
+HSPLorg/koin/**;->**(**)**
+HSPLkotlinx/coroutines/**;->**(**)**
+HSPLkotlinx/serialization/**;->**(**)**
+HSPLokhttp3/**;->**(**)**
+HSPLokio/**;->**(**)**
+HSPLretrofit2/**;->**(**)**
+HSPLcom/romanianguy/klover/**;->**(**)**
+
+Landroidx/compose/**;
+Landroidx/activity/**;
+Landroidx/lifecycle/**;
+Landroidx/navigation3/**;
+Lcoil3/**;
+Lorg/koin/**;
+Lkotlinx/coroutines/**;
+Lcom/romanianguy/klover/**;

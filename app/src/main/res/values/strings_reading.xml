@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tabletop -->
+    <string name="settings_foldables">Foldables</string>
+    <string name="settings_tabletop">Tabletop mode</string>
+    <string name="settings_tabletop_hint">Held half-open like a laptop, the page fills the top half and the controls sit on the bottom half. Held half-open like a book, you get two pages.</string>
+    <string name="tabletop_previous">Previous</string>
+    <string name="tabletop_next">Next</string>
+
+    <!-- Read aloud -->
+    <string name="read_aloud">Read aloud</string>
+    <string name="read_aloud_pause">Pause</string>
+    <string name="read_aloud_resume">Resume</string>
+    <string name="read_aloud_stop">Stop reading</string>
+    <string name="read_aloud_open_player">Show the read aloud controls</string>
+    <string name="read_aloud_previous">Previous sentence</string>
+    <string name="read_aloud_next">Next sentence</string>
+    <string name="read_aloud_sleep">Sleep timer</string>
+    <string name="sleep_off">Off</string>
+    <string name="sleep_15">15 minutes</string>
+    <string name="sleep_30">30 minutes</string>
+    <string name="sleep_60">1 hour</string>
+    <string name="sleep_section">End of this section</string>
+    <string name="read_aloud_unavailable">No speech engine is available on this device</string>
+    <string name="settings_read_aloud">Read aloud</string>
+    <string name="settings_read_aloud_speed">Reading speed</string>
+    <string name="settings_read_aloud_follow">Turn pages while reading</string>
+    <string name="settings_read_aloud_follow_hint">The page follows the voice</string>
+    <string name="settings_read_aloud_next">Continue with the next section</string>
+
+    <!-- Incognito -->
+    <string name="settings_incognito">Incognito reading</string>
+    <string name="settings_incognito_hint">Nothing you read is recorded: no reading progress is sent to your server or kept on this device, and nothing is counted in your reading stats. The time-left estimate learns nothing from it, and books you download are not measured for it either.</string>
+    <string name="incognito_label">Incognito</string>
+    <string name="incognito_banner">Incognito reading is on. What you read is not recorded.</string>
+
+    <!-- Stats -->
+    <string name="stats_title">Reading stats</string>
+    <plurals name="stats_streak">
+        <item quantity="one">%d day streak</item>
+        <item quantity="other">%d day streak</item>
+    </plurals>
+    <string name="stats_no_streak">Read a minute to start a streak</string>
+    <string name="stats_this_week">This week</string>
+    <string name="stats_today">Today</string>
+    <string name="stats_last_30">Last 30 days</string>
+    <string name="stats_all_time">All time</string>
+    <string name="stats_time">Time reading</string>
+    <string name="stats_pages_label">Pages</string>
+    <string name="stats_chapters_label">Chapters finished</string>
+    <string name="stats_active_days">Days you read</string>
+    <string name="stats_average">Average on a reading day</string>
+    <string name="stats_current_streak">Current streak</string>
+    <string name="stats_best_streak">Best streak</string>
+    <plurals name="stats_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="stats_pages">
+        <item quantity="one">%d page</item>
+        <item quantity="other">%d pages</item>
+    </plurals>
+    <string name="duration_hours_minutes">%1$d h %2$d min</string>
+    <string name="duration_minutes">%d min</string>
+    <string name="duration_less">&lt; 1 min</string>
+    <string name="stats_empty_title">Nothing counted yet</string>
+    <string name="stats_empty_body">Your reading time, pages and streak show up here as you read. It all stays on this device.</string>
+    <string name="stats_reset">Reset stats</string>
+    <string name="stats_reset_title">Reset your reading stats?</string>
+    <string name="stats_reset_body">Time, pages and streaks are cleared. This cannot be undone.</string>
+    <string name="settings_home_stats">Reading stats card</string>
+</resources>

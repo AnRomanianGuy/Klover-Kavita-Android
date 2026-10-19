@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_tab_reader">Reader</string>
+
+    <!-- More reader options -->
+    <string name="reader_brightness">Brightness while reading</string>
+    <string name="reader_brightness_system">System</string>
+    <string name="reader_orientation">Orientation</string>
+    <string name="orientation_auto">Auto</string>
+    <string name="orientation_portrait">Portrait</string>
+    <string name="orientation_landscape">Landscape</string>
+    <string name="reader_preload">Pages loaded ahead</string>
+    <string name="reader_double_tap">Double-tap zoom</string>
+    <string name="zoom_gentle">Gentle</string>
+    <string name="zoom_normal">Normal</string>
+    <string name="zoom_close">Close</string>
+    <string name="book_paragraphs">Paragraph spacing</string>
+    <string name="paragraphs_book">Book</string>
+    <string name="paragraphs_tight">Tight</string>
+    <string name="paragraphs_normal">Normal</string>
+    <string name="paragraphs_wide">Wide</string>
+    <string name="book_indent">Indent first lines</string>
+    <string name="book_hyphenate">Hyphenate words</string>
+
+    <!-- Look -->
+    <string name="settings_look">Look</string>
+    <string name="accent_custom">Custom</string>
+    <string name="settings_accent_hue">Colour</string>
+    <string name="settings_contrast">Contrast</string>
+    <string name="contrast_standard">Standard</string>
+    <string name="contrast_medium">Medium</string>
+    <string name="contrast_high">High</string>
+    <string name="settings_corners">Corners</string>
+    <string name="corners_sharp">Sharp</string>
+    <string name="corners_standard">Standard</string>
+    <string name="corners_round">Round</string>
+    <string name="settings_font">App typeface</string>
+    <string name="font_default">Default</string>
+    <string name="font_serif">Serif</string>
+    <string name="font_mono">Mono</string>
+    <string name="settings_text_size">App text size</string>
+    <string name="text_small">Small</string>
+    <string name="text_default">Default</string>
+    <string name="text_large">Large</string>
+    <string name="text_huge">Huge</string>
+    <string name="settings_nav_labels">Navigation labels</string>
+    <string name="nav_labels_selected">Selected</string>
+    <string name="nav_labels_always">Always</string>
+    <string name="nav_labels_never">None</string>
+    <string name="settings_grid_spacing">Space between covers</string>
+    <string name="spacing_compact">Tight</string>
+    <string name="spacing_normal">Normal</string>
+    <string name="spacing_relaxed">Airy</string>
+    <string name="settings_subtitles">Details under covers</string>
+    <string name="settings_subtitles_hint">The line under a title: library, number of new chapters…</string>
+
+    <!-- More options -->
+    <string name="settings_home_section">Home</string>
+    <string name="settings_home_continue">Continue reading</string>
+    <string name="settings_home_updated">Recently updated</string>
+    <string name="settings_home_added">Recently added</string>
+    <string name="settings_sort">Sort series by</string>
+    <string name="sort_added">Added</string>
+    <string name="sort_updated">Updated</string>
+    <string name="sort_year">Year</string>
+    <string name="settings_download_badges">Download markers on covers</string>
+    <string name="settings_download_badges_hint">A small badge on series and volumes that are downloaded or downloading</string>
+    <string name="settings_cover_flight">Cover flight</string>
+    <string name="settings_cover_flight_hint">The cover you tap flies to the series page; off opens series at once</string>
+    <string name="settings_peek_blur">Blur behind the quick view</string>
+    <string name="settings_peek_blur_hint">Off is lighter on older phones</string>
+    <string name="reader_tap_size">Size of the tap strips</string>
+    <string name="tap_size_narrow">Narrow</string>
+    <string name="tap_size_normal">Normal</string>
+    <string name="tap_size_wide">Wide</string>
+    <string name="settings_download_parallel">Downloads at the same time</string>
+    <string name="settings_auto_delete">Delete after reading</string>
+    <string name="settings_auto_delete_hint">Remove a downloaded chapter once you have read it to the end</string>
+    <string name="settings_storage">Storage</string>
+    <string name="settings_storage_cache">Image cache</string>
+    <string name="settings_storage_clear">Clear cache</string>
+
+    <!-- Appearance -->
+    <string name="settings_accent">Accent colour</string>
+    <string name="accent_wallpaper">Wallpaper</string>
+    <string name="accent_clover">Clover</string>
+    <string name="accent_ocean">Ocean</string>
+    <string name="accent_violet">Violet</string>
+    <string name="accent_rose">Rose</string>
+    <string name="accent_amber">Amber</string>
+    <string name="accent_teal">Teal</string>
+    <string name="accent_graphite">Graphite</string>
+    <string name="settings_amoled">True black</string>
+    <string name="settings_amoled_hint">Pure black surfaces in the dark theme - saves battery on OLED screens</string>
+    <string name="settings_library_section">Library</string>
+    <string name="settings_cover_size">Cover size</string>
+    <string name="cover_small">Small</string>
+    <string name="cover_medium">Medium</string>
+    <string name="cover_large">Large</string>
+    <string name="settings_show_progress">Progress on covers</string>
+    <string name="settings_show_progress_hint">A thin bar under each cover you have started</string>
+    <string name="settings_start_tab">Open on</string>
+    <string name="settings_feel_section">Motion and touch</string>
+    <string name="settings_motion">Motion</string>
+    <string name="motion_bouncy">Bouncy</string>
+    <string name="motion_calm">Calm</string>
+    <string name="motion_reduced">Reduced</string>
+    <string name="settings_haptics">Haptic feedback</string>
+    <string name="settings_hold_to_peek">Hold to peek</string>
+    <string name="settings_hold_to_peek_hint">Hold a cover to lift it and see quick actions</string>
+
+    <!-- Reader: pages -->
+    <string name="settings_reader_pages">Pages - comics, manga and PDF</string>
+    <string name="reader_background">Background</string>
+    <string name="reader_bg_black">Black</string>
+    <string name="reader_bg_dark">Dark</string>
+    <string name="reader_bg_paper">Paper</string>
+    <string name="reader_bg_theme">Theme</string>
+    <string name="reader_cover_alone">Cover on its own</string>
+    <string name="reader_cover_alone_hint">With two pages on screen, show the first page alone like a printed book</string>
+    <string name="reader_page_turn">Page turn</string>
+    <string name="reader_turn_slide">Slide</string>
+    <string name="reader_turn_fade">Fade</string>
+    <string name="reader_turn_instant">Instant</string>
+    <string name="reader_turn_flip">Book flip</string>
+
+    <!-- Reader: behaviour -->
+    <string name="settings_reader_behavior">Controls</string>
+    <string name="reader_tap_zones">Tap the edges to turn pages</string>
+    <string name="reader_invert_tap">Swap the tap sides</string>
+    <string name="reader_volume_keys">Volume keys turn pages</string>
+    <string name="reader_show_page_number">Page number while reading</string>
+    <string name="reader_keep_awake">Keep the screen on</string>
+    <string name="reader_immersive">Hide the system bars</string>
+
+    <!-- Reader: books -->
+    <string name="settings_reader_books">Books - EPUB</string>
+    <string name="book_font">Typeface</string>
+    <string name="book_font_serif">Serif</string>
+    <string name="book_font_sans">Sans</string>
+    <string name="book_font_mono">Mono</string>
+    <string name="book_line_spacing">Line spacing</string>
+    <string name="book_margins">Margins</string>
+    <string name="book_margins_narrow">Narrow</string>
+    <string name="book_margins_normal">Normal</string>
+    <string name="book_margins_wide">Wide</string>
+    <string name="book_justify">Justify text</string>
+    <string name="book_theme">Page colour</string>
+    <string name="book_theme_app">App</string>
+    <string name="book_theme_paper">Paper</string>
+    <string name="book_theme_sepia">Sepia</string>
+    <string name="book_theme_dark">Dark</string>
+    <string name="book_theme_black">Black</string>
+    <string name="book_preview">The quick brown fox jumps over the lazy dog, and the reader settles in for one more chapter before bed.</string>
+
+    <!-- Reset -->
+    <string name="settings_reset">Reset all options</string>
+    <string name="settings_reset_title">Reset options?</string>
+    <string name="settings_reset_body">Appearance and reader options go back to their defaults. You stay signed in, and Incognito stays as it is.</string>
+    <string name="settings_reset_confirm">Reset</string>
+</resources>

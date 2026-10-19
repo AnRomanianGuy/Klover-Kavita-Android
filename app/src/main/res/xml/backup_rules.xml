@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Legacy (pre Android 12) backup rules: keep the encrypted sign-in session out of backups. -->
+<full-backup-content>
+    <exclude domain="file" path="datastore/session.preferences_pb" />
+    <!-- Downloaded books can be gigabytes and are re-downloadable; never back them up. -->
+    <exclude domain="file" path="downloads" />
+</full-backup-content>

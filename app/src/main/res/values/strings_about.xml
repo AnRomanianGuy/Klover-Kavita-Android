@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_title">About</string>
+    <string name="about_tagline">Your Kavita library, beautifully read.</string>
+    <string name="about_version">Version %1$s (%2$d)</string>
+    <string name="about_section_server">Your server</string>
+    <string name="about_server_address">Address</string>
+    <string name="about_server_user">Signed in as</string>
+    <string name="about_server_version">Kavita version</string>
+    <string name="about_server_unknown">Could not be asked</string>
+    <string name="about_section_device">This device</string>
+    <string name="about_device_model">Device</string>
+    <string name="about_device_android">Android</string>
+    <string name="about_device_screen">Screen</string>
+    <string name="about_section_data">On this device</string>
+    <string name="about_downloads">Downloads</string>
+    <plurals name="about_downloads_value">
+        <item quantity="one">%1$s in %2$d chapter</item>
+        <item quantity="other">%1$s in %2$d chapters</item>
+    </plurals>
+    <string name="about_section_credits">Built with</string>
+    <string name="about_credit_compose">Jetpack Compose and Material 3</string>
+    <string name="about_credit_nav">Navigation 3 and adaptive layouts</string>
+    <string name="about_credit_coil">Coil, image loading</string>
+    <string name="about_credit_okhttp">OkHttp and Retrofit, networking</string>
+    <string name="about_credit_koin">Koin, dependency injection</string>
+    <string name="about_credit_kotlinx">kotlinx.serialization and coroutines</string>
+    <string name="about_credit_color">Material Color Utilities, accent palettes</string>
+    <string name="about_licence">Apache License 2.0</string>
+    <string name="about_open_kavita">Kavita website</string>
+    <string name="about_copy_info">Copy diagnostic info</string>
+    <string name="about_copied">Copied to the clipboard</string>
+    <string name="about_footer">Klover is an unofficial client and is not affiliated with Kavita. Made for people who like their books on a foldable.</string>
+</resources>

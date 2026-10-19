@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="filters_button">Filters</string>
+    <string name="filters_button_count">Filters · %1$d</string>
+    <string name="filters_title">Filter the library</string>
+    <string name="filters_status">Status</string>
+    <string name="filters_genre">Genre</string>
+    <string name="filters_no_genres">This server has no genres yet.</string>
+    <string name="filters_reading">Reading</string>
+    <string name="filters_unread_only">Unread only</string>
+    <string name="filters_rating">Your rating</string>
+    <string name="filters_rating_any">Any</string>
+    <string name="filters_rating_min">%1$d★ +</string>
+    <string name="filters_clear_all">Clear all</string>
+    <string name="filters_done">Show results</string>
+    <string name="filters_also_matches">Also matches</string>
+    <string name="filters_kind_genre">Genre</string>
+    <string name="filters_kind_tag">Tag</string>
+    <string name="filters_kind_writer">Writer</string>
+    <string name="filters_kind_artist">Artist</string>
+    <string name="filters_kind_person">Person</string>
+    <string name="filters_empty">Nothing matches these filters.</string>
+</resources>

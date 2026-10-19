@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_downloads">Downloads</string>
+    <string name="downloads_title">Downloads</string>
+    <string name="downloads_channel">Downloads</string>
+
+    <!-- Notification -->
+    <plurals name="downloads_notification_title">
+        <item quantity="one">Downloading %d book</item>
+        <item quantity="other">Downloading %d books</item>
+    </plurals>
+    <string name="downloads_notification_progress">%1$d%% complete</string>
+    <string name="downloads_pause_all">Pause all</string>
+    <string name="downloads_resume_all">Resume all</string>
+
+    <!-- Tab -->
+    <string name="downloads_hero_label">On this device</string>
+    <plurals name="downloads_series_count">
+        <item quantity="one">%d series</item>
+        <item quantity="other">%d series</item>
+    </plurals>
+    <plurals name="downloads_hero_active">
+        <item quantity="one">Downloading %d chapter</item>
+        <item quantity="other">Downloading %d chapters</item>
+    </plurals>
+    <string name="downloads_show_chapters">Show chapters</string>
+    <string name="downloads_filter_all">All</string>
+    <string name="downloads_filter_active">Downloading (%1$d)</string>
+    <string name="downloads_filter_done">On this device</string>
+    <string name="downloads_nothing_active">Nothing is downloading right now</string>
+    <string name="downloads_empty_title">Nothing downloaded yet</string>
+    <string name="downloads_empty_body">Hold a volume or chapter and choose Download, or use the menu on a series page. Downloaded books open without a connection.</string>
+    <string name="downloads_section_active">In progress</string>
+    <string name="downloads_section_done">On this device</string>
+    <plurals name="downloads_chapters">
+        <item quantity="one">%d chapter</item>
+        <item quantity="other">%d chapters</item>
+    </plurals>
+    <string name="downloads_offline">No connection - your downloads still open</string>
+    <plurals name="downloads_read_progress">
+        <item quantity="one">%1$d / %2$d page</item>
+        <item quantity="other">%1$d / %2$d pages</item>
+    </plurals>
+
+    <!-- Status -->
+    <string name="downloads_status_queued">Waiting in line</string>
+    <string name="downloads_status_wifi">Waiting for Wi-Fi</string>
+    <string name="downloads_status_connection">Waiting for a connection</string>
+    <string name="downloads_status_paused">Paused</string>
+    <string name="downloads_status_failed">Failed - %1$s</string>
+    <string name="downloads_error_network">can\'t reach the server</string>
+    <string name="downloads_error_storage">not enough storage space</string>
+    <string name="downloads_error_auth">not allowed, sign in again</string>
+    <string name="downloads_error_not_found">not found on the server</string>
+    <string name="downloads_error_server">the server had a problem</string>
+    <string name="downloads_error_other">something went wrong</string>
+
+    <!-- Actions -->
+    <string name="downloads_pause">Pause</string>
+    <string name="downloads_resume">Resume</string>
+    <string name="downloads_retry">Try again</string>
+    <string name="downloads_cancel">Cancel download</string>
+    <string name="downloads_remove">Delete download</string>
+    <string name="downloads_delete_all">Delete all downloads</string>
+    <string name="downloads_delete_all_title">Delete all downloads?</string>
+    <string name="downloads_delete_all_body">Everything downloaded to this device is removed. Your reading progress stays on the server.</string>
+    <string name="downloads_delete_series_title">Delete the downloads of %1$s?</string>
+    <string name="downloads_delete_series_body">They can be downloaded again at any time.</string>
+    <string name="downloads_delete_confirm">Delete</string>
+    <string name="downloads_open_series">Open series</string>
+
+    <!-- Hold menu / series screen -->
+    <string name="action_download">Download</string>
+    <string name="action_download_stop">Stop download</string>
+    <string name="action_download_remove">Remove download</string>
+    <string name="action_download_remaining">Download the rest</string>
+    <string name="action_download_series">Download whole series</string>
+    <string name="action_download_series_rest">Download rest of series</string>
+    <string name="action_download_series_stop">Stop series download</string>
+    <string name="action_download_series_remove">Remove series download</string>
+    <string name="series_download_all">Download all</string>
+    <string name="series_download_unread">Download unread</string>
+    <string name="series_download_remove">Remove downloads</string>
+    <string name="downloads_badge_done">Downloaded</string>
+    <string name="downloads_badge_active">Downloading</string>
+
+    <!-- Settings -->
+    <string name="settings_downloads">Downloads</string>
+    <string name="settings_smart_downloads">Smart downloads</string>
+    <string name="settings_smart_downloads_hint">While you read, the next chapters of that series download by themselves, on Wi-Fi only. Not used in incognito, or when the device is nearly full.</string>
+    <string name="settings_smart_ahead">Chapters ahead</string>
+    <string name="settings_smart_cleanup">Clean up what you have read</string>
+    <string name="settings_smart_cleanup_hint">Remove the chapters smart downloads fetched once you have read them. The latest one you read stays; chapters you downloaded yourself are never removed.</string>
+    <string name="downloads_smart_tag">Smart</string>
+    <string name="settings_download_wifi">Wi-Fi only</string>
+    <string name="settings_download_wifi_hint">Wait for Wi-Fi before downloading, so mobile data is not used</string>
+</resources>

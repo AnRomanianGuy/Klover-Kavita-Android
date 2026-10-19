@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Cloud backup and device-to-device transfer must not carry the sign-in session: its secrets are encrypted with
+    a key that stays on this device, so a restored copy would be unreadable anyway.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="datastore/session.preferences_pb" />
+        <exclude domain="file" path="downloads" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="datastore/session.preferences_pb" />
+        <exclude domain="file" path="downloads" />
+    </device-transfer>
+</data-extraction-rules>

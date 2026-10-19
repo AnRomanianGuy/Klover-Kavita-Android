@@ -1,0 +1,26 @@
+# Gradle and build output
+.gradle/
+build/
+.kotlin/
+*.apk
+*.aab
+
+# Local configuration and secrets
+local.properties
+*.jks
+*.keystore
+keystore.properties
+
+# IDE
+.idea/
+*.iml
+.run/*.local.xml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# OS and tooling
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc

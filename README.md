@@ -1,12 +1,3 @@
-<!--
-  Before publishing:
-  1. GitHub name (AnRomanianGuy) is already filled in: badges, clone URL and issue links.
-  2. The GIFs are in docs/media/ (the list is at the bottom of this file).
-  3. License: Apache 2.0 (the LICENSE file is already in the repo).
-  4. The source code is NOT published, and it does NOT come with the first app release: the app (APK) comes first, the code
-     later, with no date. When the code does go up, remove the "source later" notes (search for "Source code").
--->
-
 <div align="center">
 
 # Klover
@@ -19,7 +10,6 @@
 [![Works with Kavita](https://img.shields.io/badge/works%20with-Kavita-1f6feb)](https://www.kavitareader.com/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](#license)
 [![Status](https://img.shields.io/badge/status-solo%20project%2C%20in%20active%20development-orange)](#roadmap)
-[![Source code](https://img.shields.io/badge/source%20code-published%20later-lightgrey)](#source-code)
 
 <img src="docs/media/hero.gif" alt="Klover, a Kavita client for Android, showing the library, a comic in the reader and the foldable book mode" width="720">
 
@@ -32,10 +22,6 @@ sync with the server, works offline, and uses **two pages on a foldable** like a
 I built it for myself first. I read on a Pixel Fold and I wanted the unfolded screen to show two pages, the half-open
 posture to turn pages like paper, and the whole app to look like it belongs to Android 15+ (Material 3 Expressive, not a
 web page in a wrapper). If you self-host your library and read on Android, it might be what you were looking for too.
-
-> **App first, source code later.** The app is released as a downloadable APK (see [Install](#install)). The source code is
-> **not** part of that release and will be published at a later time. Details in
-> [Source code](#source-code).
 
 > **Not affiliated with Kavita.** Klover is an independent client that talks to your own Kavita server. You need a
 > Kavita server to use it.
@@ -73,14 +59,23 @@ web page in a wrapper). If you self-host your library and read on Android, it mi
 
 ## Source code
 
-Klover is real and working: the GIFs below are recorded from the actual app. What is **not** public yet is the source code.
-The app comes first, as an installable APK, and I will publish the code **later, not together with it**. I do
-not have a date for it, and I would rather say so than promise one.
+It is all in this repository, under the [Apache License 2.0](LICENSE): the app in `app/`, the unit tests in
+`app/src/test`, and in `tools/` a small fake Kavita server and the scripts that made the demo library for the GIFs.
 
-The code is licensed under the [Apache License 2.0](LICENSE). Until it is published, this repository is the home of the
-project's page, screenshots, releases and issue tracker.
+To build it you need a recent Android Studio (it brings the JDK) and the Android SDK for API 37:
 
-Watch the repo (the *Watch → Releases* option) to be told when a release lands.
+```
+./gradlew assembleDebug          # debug build
+./gradlew testDebugUnitTest      # unit tests
+./gradlew assembleRelease        # shrunk release build with the baseline profile
+```
+
+`-PkloverSuffix=.debug` installs a build next to the real app, with its own storage. A release build is signed with
+the key described in `keystore.properties` (storeFile, storePassword, keyAlias, keyPassword); that file is not in the
+repo, and without it the release build falls back to the debug key.
+
+The code is kept plain on purpose, with few comments. Parts of it were written with an AI assistant, see
+[AI assistance](#ai-assistance).
 
 ---
 
@@ -226,6 +221,8 @@ Not supported yet: see [known issues](#known-issues).
 ## Requirements
 
 - Android 15 or newer (API 35).
+  Is that too new for your phone? Tell me in an [issue](https://github.com/AnRomanianGuy/Klover-Kavita-Android/issues)
+  and if enough people need it, I will make a legacy version that runs on older Android versions.
 - A Kavita server you can reach from the phone. Klover is developed against Kavita's current API; if your version
   behaves oddly, please [open an issue](https://github.com/AnRomanianGuy/Klover-Kavita-Android/issues) with the version number.
 - On Android 17, connecting to a server on your home network needs the *nearby devices* permission. Klover asks for it
@@ -241,9 +238,9 @@ The first release, **v1.0**, is an early build published as an **APK on this rep
 2. Open it. Android will ask you to allow installs from that app (your browser or file manager); allow it for this one install.
 3. Open Klover, enter your Kavita server address, and sign in with your username and password or an API key.
 
-Updates are manual for now: download the new APK and install it over the old one, your sign-in and data stay. The build is
-signed with a development key, so if a future build ever refuses to install over an old one, uninstall first and sign in
-again.
+Updates are manual for now: download the new APK and install it over the old one, your sign-in and data stay. Releases are
+signed with the project's own key. The very first v1.0 upload was signed with a development key and was replaced; if you
+installed that one, uninstall it once before installing the current one.
 
 ---
 
@@ -268,7 +265,7 @@ reading stats and time-left estimates, themes, and a calmer start-up.
 Next, roughly in this order. These are ideas, not promises, and there are no dates:
 
 - [x] **First release: a downloadable APK on GitHub Releases** (v1.0, early)
-- [ ] Publish the source code (later, not with the first release; no date yet)
+- [x] Publish the source code
 - [ ] Sharper PDF zoom (re-render the visible part at a higher resolution)
 - [ ] More languages (the UI is English only today)
 - [ ] Bookmarks in the EPUB reader (comics have them already)
@@ -331,15 +328,14 @@ Klover is a solo project, so replies are quick when I am at my desk and slow whe
 version, your phone and what you were doing help the most. Ideas are welcome too.
 
 - [Open an issue](https://github.com/AnRomanianGuy/Klover-Kavita-Android/issues): bug reports and ideas are welcome right now.
-- Code contributions are not possible yet, since the source code is not public.
+- Pull requests are welcome. For anything bigger than a small fix, open an issue first so we agree on the direction.
 
 ---
 
 ## License
 
 Klover's code is licensed under the [Apache License, Version 2.0](LICENSE). In short: you may use, change and share it,
-including commercially, as long as you keep the license and copyright notices; it comes with no warranty. The source code
-itself is not published yet (see [Source code](#source-code)).
+including commercially, as long as you keep the license and copyright notices; it comes with no warranty.
 
 ---
 
