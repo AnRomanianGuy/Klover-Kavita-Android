@@ -33,8 +33,8 @@ I built it for myself first. I read on a Pixel Fold and I wanted the unfolded sc
 posture to turn pages like paper, and the whole app to look like it belongs to Android 15+ (Material 3 Expressive, not a
 web page in a wrapper). If you self-host your library and read on Android, it might be what you were looking for too.
 
-> **App first, source code later.** This page shows what Klover does today. The app will be released as a downloadable APK
-> first. The source code is **not** part of that release and will be published at a later time. Details in
+> **App first, source code later.** The app is released as a downloadable APK (see [Install](#install)). The source code is
+> **not** part of that release and will be published at a later time. Details in
 > [Source code](#source-code).
 
 > **Not affiliated with Kavita.** Klover is an independent client that talks to your own Kavita server. You need a
@@ -74,7 +74,7 @@ web page in a wrapper). If you self-host your library and read on Android, it mi
 ## Source code
 
 Klover is real and working: the GIFs below are recorded from the actual app. What is **not** public yet is the source code.
-I will release the app first, as an installable APK, and publish the code **later, not together with that release**. I do
+The app comes first, as an installable APK, and I will publish the code **later, not together with it**. I do
 not have a date for it, and I would rather say so than promise one.
 
 The code is licensed under the [Apache License 2.0](LICENSE). Until it is published, this repository is the home of the
@@ -235,14 +235,15 @@ Not supported yet: see [known issues](#known-issues).
 
 ## Install
 
-The first release will be an **APK on this repository's Releases page**. There is no store listing. When it is out:
+The first release, **v1.0**, is an early build published as an **APK on this repository's [Releases page](https://github.com/AnRomanianGuy/Klover-Kavita-Android/releases)**. There is no store listing.
 
-1. Download the APK on your phone from the Releases page.
+1. Download `Klover-1.0.apk` on your phone from the Releases page.
 2. Open it. Android will ask you to allow installs from that app (your browser or file manager); allow it for this one install.
 3. Open Klover, enter your Kavita server address, and sign in with your username and password or an API key.
 
-Updates are manual for now: download the new APK and install it over the old one, your sign-in and data stay. There is no
-release yet, so there is nothing to download today.
+Updates are manual for now: download the new APK and install it over the old one, your sign-in and data stay. The build is
+signed with a development key, so if a future build ever refuses to install over an old one, uninstall first and sign in
+again.
 
 ---
 
@@ -266,7 +267,7 @@ reading stats and time-left estimates, themes, and a calmer start-up.
 
 Next, roughly in this order. These are ideas, not promises, and there are no dates:
 
-- [ ] **First release: a downloadable APK on GitHub Releases**
+- [x] **First release: a downloadable APK on GitHub Releases** (v1.0, early)
 - [ ] Publish the source code (later, not with the first release; no date yet)
 - [ ] Sharper PDF zoom (re-render the visible part at a higher resolution)
 - [ ] More languages (the UI is English only today)
