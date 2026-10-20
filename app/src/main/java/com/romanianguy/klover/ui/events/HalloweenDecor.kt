@@ -103,7 +103,7 @@ private class HalloweenColors(val strand: Color, val spider: Color, val bat: Col
             val dark = scheme.surface.luminance() < 0.5f
             return HalloweenColors(
                 strand = scheme.onSurface.copy(alpha = if (dark) 0.42f else 0.36f),
-                spider = scheme.onSurfaceVariant,
+                spider = if (dark) lerp(Color(0xFF8D74C6), scheme.tertiary, 0.2f) else lerp(Color(0xFF45306A), scheme.tertiary, 0.2f),
                 bat = lerp(Color(0xFF7A4DD6), scheme.tertiary, 0.45f),
             )
         }
@@ -263,70 +263,73 @@ private fun DrawScope.drawWeb(corner: Offset, rx: Float, ry: Float, dir: Float, 
     }
 }
 
-// [unit] is what a dp is worth here, smaller on a short band
+// [unit] is what a dp is worth here, smaller on a short band. A friendly cartoon spider on its thread: a round purple body
+// with a highlight and a few spots, a big head with round eyes, and eight legs that arch up at the knee
 private fun DrawScope.drawSpider(top: Offset, thread: Float, unit: Float, body: Color, line: Color) {
-    val light = lerp(body, Color.White, 0.5f)
+    val light = lerp(body, Color.White, 0.42f)
     val dark = lerp(body, Color.Black, 0.45f)
     drawLine(line, top, Offset(top.x, top.y + thread), 1.1f * unit, StrokeCap.Round)
-    val abdomen = Offset(top.x, top.y + thread + 12 * unit)
-    val head = Offset(top.x, top.y + thread + 26 * unit)
+    val abdomen = Offset(top.x, top.y + thread + 11 * unit)
+    val head = Offset(top.x, top.y + thread + 25 * unit)
 
-    // eight legs of two bent segments that taper, each with a shadow under it and a joint at the knee
+    // the legs sit behind the body: each side has four, the upper segment rising to a knee, the lower one coming down
+    class Leg(val startX: Float, val startY: Float, val kneeX: Float, val kneeY: Float, val footX: Float, val footY: Float)
+    val legs = listOf(
+        Leg(3f, -5f, 13f, -20f, 25f, -9f),
+        Leg(3.5f, -3f, 17f, -14f, 28f, 2f),
+        Leg(4f, -1f, 18f, -7f, 28f, 11f),
+        Leg(3.5f, 1f, 15f, -1f, 23f, 19f),
+    )
     for (side in listOf(-1f, 1f)) {
-        for (i in 0 until 4) {
-            val start = Offset(head.x + side * 3f * unit, head.y - 4f * unit + i * 2.2f * unit)
-            val knee = Offset(head.x + side * (15f + i * 1f) * unit, head.y + (-17f + i * 8f) * unit)
-            val mid = Offset(head.x + side * 25f * unit, head.y + (-8f + i * 9.5f) * unit)
-            val foot = Offset(head.x + side * (28f - i * 0.5f) * unit, head.y + (3f + i * 10.5f) * unit)
+        for (leg in legs) {
+            val start = Offset(head.x + side * leg.startX * unit, head.y + leg.startY * unit)
+            val knee = Offset(head.x + side * leg.kneeX * unit, head.y + leg.kneeY * unit)
+            val foot = Offset(head.x + side * leg.footX * unit, head.y + leg.footY * unit)
             val upper = Path()
             upper.moveTo(start.x, start.y)
-            upper.quadraticTo((start.x + knee.x) / 2f, knee.y - 1f * unit, knee.x, knee.y)
+            upper.lineTo(knee.x, knee.y)
             val lower = Path()
             lower.moveTo(knee.x, knee.y)
-            lower.quadraticTo(mid.x + side * 1f * unit, mid.y - 2f * unit, foot.x, foot.y)
-            drawPath(upper, dark, style = Stroke(2.3f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
-            drawPath(lower, dark, style = Stroke(1.7f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
-            drawPath(upper, body, style = Stroke(1.6f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
-            drawPath(lower, body, style = Stroke(1.1f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
-            drawCircle(light.copy(alpha = 0.8f), 0.9f * unit, knee)
+            lower.quadraticTo(foot.x + side * 1.5f * unit, knee.y + (foot.y - knee.y) * 0.45f, foot.x, foot.y)
+            drawPath(upper, dark, style = Stroke(2.6f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            drawPath(lower, dark, style = Stroke(2.0f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            drawPath(upper, body, style = Stroke(1.9f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            drawPath(lower, body, style = Stroke(1.4f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            drawCircle(light.copy(alpha = 0.7f), 1.0f * unit, knee)
         }
     }
 
-    // the abdomen, round and glossy, with a red hourglass on it
-    val ar = Size(21f * unit, 26f * unit)
+    // the abdomen: round, shaded from the top left, with a shine and a few spots
+    val ar = Size(20f * unit, 23f * unit)
     val aTop = Offset(abdomen.x - ar.width / 2f, abdomen.y - ar.height / 2f)
     drawOval(
-        Brush.radialGradient(listOf(light, body, dark), Offset(abdomen.x - 4f * unit, abdomen.y - 6f * unit), 17f * unit),
+        Brush.radialGradient(listOf(light, body, dark), Offset(abdomen.x - 4f * unit, abdomen.y - 5f * unit), 16f * unit),
         aTop,
         ar,
     )
-    drawOval(dark.copy(alpha = 0.7f), aTop, ar, style = Stroke(0.8f * unit))
-    drawOval(Color.White.copy(alpha = 0.5f), Offset(abdomen.x - 6f * unit, abdomen.y - 9f * unit), Size(5f * unit, 7f * unit))
-    val hourglass = Path()
-    hourglass.moveTo(abdomen.x - 3.2f * unit, abdomen.y - 1f * unit)
-    hourglass.lineTo(abdomen.x + 3.2f * unit, abdomen.y - 1f * unit)
-    hourglass.lineTo(abdomen.x, abdomen.y + 3.5f * unit)
-    hourglass.close()
-    hourglass.moveTo(abdomen.x - 3.2f * unit, abdomen.y + 8f * unit)
-    hourglass.lineTo(abdomen.x + 3.2f * unit, abdomen.y + 8f * unit)
-    hourglass.lineTo(abdomen.x, abdomen.y + 3.5f * unit)
-    hourglass.close()
-    drawPath(hourglass, Color(0xFFE5402F).copy(alpha = 0.9f))
+    drawOval(dark.copy(alpha = 0.8f), aTop, ar, style = Stroke(0.9f * unit))
+    drawOval(Color.White.copy(alpha = 0.45f), Offset(abdomen.x - 6.5f * unit, abdomen.y - 8f * unit), Size(4.5f * unit, 6.5f * unit))
+    val spot = Color(0xFFFFA23A).copy(alpha = 0.95f)
+    drawCircle(spot, 1.9f * unit, Offset(abdomen.x, abdomen.y + 1f * unit))
+    drawCircle(spot, 1.4f * unit, Offset(abdomen.x - 4.2f * unit, abdomen.y + 4.5f * unit))
+    drawCircle(spot, 1.4f * unit, Offset(abdomen.x + 4.2f * unit, abdomen.y + 4.5f * unit))
 
-    // the head, with a pair of glowing eyes and small ones, and fangs
-    drawCircle(
-        Brush.radialGradient(listOf(light, body, dark), Offset(head.x - 2f * unit, head.y - 2.5f * unit), 8f * unit),
-        6.8f * unit,
-        head,
-    )
+    // the head: big and round, with two round eyes that look down, and a small smile
+    val hr = 8.6f * unit
+    drawCircle(Brush.radialGradient(listOf(light, body, dark), Offset(head.x - 2.5f * unit, head.y - 3f * unit), 11f * unit), hr, head)
+    drawCircle(dark.copy(alpha = 0.8f), hr, head, style = Stroke(0.9f * unit))
     for (side in listOf(-1f, 1f)) {
-        val eye = Offset(head.x + side * 2.4f * unit, head.y + 1.2f * unit)
-        drawCircle(Color(0xFFFF5A3C).copy(alpha = 0.35f), 3.2f * unit, eye)
-        drawCircle(Color(0xFFFF5A3C), 1.6f * unit, eye)
-        drawCircle(Color.White.copy(alpha = 0.9f), 0.5f * unit, Offset(eye.x - 0.4f * unit, eye.y - 0.5f * unit))
-        drawCircle(Color(0xFFFF8A6A), 0.8f * unit, Offset(head.x + side * 4.4f * unit, head.y - 0.8f * unit))
-        drawLine(dark, Offset(head.x + side * 1.2f * unit, head.y + 5f * unit), Offset(head.x + side * 1.6f * unit, head.y + 8f * unit), 1.3f * unit, StrokeCap.Round)
+        val eye = Offset(head.x + side * 3.4f * unit, head.y - 0.8f * unit)
+        drawCircle(Color.White, 3.1f * unit, eye)
+        drawCircle(dark.copy(alpha = 0.55f), 3.1f * unit, eye, style = Stroke(0.6f * unit))
+        val pupil = Offset(eye.x - side * 0.2f * unit, eye.y + 0.8f * unit)
+        drawCircle(Color(0xFF1B1226), 1.6f * unit, pupil)
+        drawCircle(Color.White, 0.55f * unit, Offset(pupil.x - 0.5f * unit, pupil.y - 0.6f * unit))
     }
+    val smile = Path()
+    smile.moveTo(head.x - 3f * unit, head.y + 4.2f * unit)
+    smile.quadraticTo(head.x, head.y + 6.4f * unit, head.x + 3f * unit, head.y + 4.2f * unit)
+    drawPath(smile, dark, style = Stroke(1.1f * unit, cap = StrokeCap.Round))
 }
 
 // a bat in flight: wings with three finger bones and a scalloped edge, shaded from the body outwards, a head with ears
