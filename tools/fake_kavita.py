@@ -134,6 +134,18 @@ def chapter_dto(s, v, c):
     }
 
 
+LOOSE = 0  # --loose N: chapters that belong to no volume
+
+
+def loose_chapter_dto(s, n):
+    dto = chapter_dto(s, 1, 1)
+    cid = 900000 + s * 100 + n
+    dto.update({"id": cid, "range": str(100 + n), "number": str(100 + n), "minNumber": 100 + n, "maxNumber": 100 + n,
+                "title": f"Chapter {100 + n}", "volumeId": 0, "pagesRead": 0})
+    dto["files"] = [dict(dto["files"][0], id=cid)]
+    return dto
+
+
 def series_dto(s):
     d = dict(SERIES_BY_ID[s])
     read = sum(PROGRESS.get(chapter_id(s, v, c), 0) for v in range(1, VOLS + 1) for c in range(1, CHAPS + 1))
@@ -149,8 +161,10 @@ def detail_dto(s):
             "id": s * 100 + v, "minNumber": v, "maxNumber": v, "name": str(v), "number": v,
             "pages": pages_for(s) * CHAPS, "pagesRead": sum(c["pagesRead"] for c in chs), "seriesId": s, "chapters": chs,
         })
-    return {"specials": [], "chapters": [], "volumes": vols, "storylineChapters": [], "libraryType": 0,
-            "unreadCount": 0, "totalCount": VOLS * CHAPS}
+    loose = [loose_chapter_dto(s, n) for n in range(1, LOOSE + 1)]
+    # Kavita lists chapters that are not in a volume under both "chapters" and "storylineChapters"
+    return {"specials": [], "chapters": loose, "volumes": vols, "storylineChapters": loose, "libraryType": 0,
+            "unreadCount": 0, "totalCount": VOLS * CHAPS + LOOSE}
 
 
 def continue_point(s):
@@ -586,9 +600,11 @@ if __name__ == "__main__":
     ap.add_argument("--port", type=int, default=5055)
     ap.add_argument("--token-ttl", type=int, default=0)
     ap.add_argument("--showcase", action="store_true", help="serve original generated artwork and prose (for screenshots and recordings)")
+    ap.add_argument("--loose", type=int, default=0, help="chapters that belong to no volume, listed twice like Kavita does")
     ap.add_argument("--delay", type=float, default=0.0, help="seconds to wait before serving each page / picture / PDF")
     args = ap.parse_args()
     Handler.ttl = args.token_ttl
+    LOOSE = args.loose
     if args.showcase:
         install_showcase()
     Handler.delay = args.delay

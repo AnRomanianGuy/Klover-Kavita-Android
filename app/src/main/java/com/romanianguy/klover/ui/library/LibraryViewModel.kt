@@ -208,7 +208,7 @@ class LibraryViewModel(
                     page = pageNumber
                     _state.update {
                         it.copy(
-                            items = if (pageNumber == 1) result.value.items else it.items + result.value.items,
+                            items = if (pageNumber == 1) result.value.items else (it.items + result.value.items).distinctBy { series -> series.id },
                             loadingFirstPage = false,
                             loadingMore = false,
                             endReached = !result.value.hasMore || result.value.items.isEmpty(),

@@ -148,7 +148,7 @@ internal fun VolumeSheet(
 
     LaunchedEffect(tile.key) {
         if (files.size > 1) {
-            rows = files.map { it.asRow(chapterLabel) }
+            rows = files.map { it.asRow(chapterLabel) }.distinctBy { it.key }
         } else {
             val found = if (single == null) emptyList() else loadInner(tile)
             if (single == null || found.isEmpty()) {
@@ -157,7 +157,7 @@ internal fun VolumeSheet(
             } else {
                 estimated = found.any { it.estimated }
                 inner = found
-                rows = found.map { it.asRow(single) }
+                rows = found.map { it.asRow(single) }.distinctBy { it.key }
             }
         }
     }

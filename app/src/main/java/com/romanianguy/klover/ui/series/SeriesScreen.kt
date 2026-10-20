@@ -403,9 +403,11 @@ private fun SeriesContent(
     val resources = LocalResources.current
     val pagesLabel = { pages: Int -> resources.getQuantityString(R.plurals.series_pages, pages, pages) }
 
-    val volumes = detail.volumes.map { it.toTile(urls, volumeLabel, pagesLabel) }
-    val chapters = (detail.chapters + detail.storylineChapters).map { it.toTile(urls, chapterLabel, pagesLabel) }
-    val specials = detail.specials.map { it.toTile(urls, chapterLabel, pagesLabel) }
+    val volumes = detail.volumes.distinctBy { it.id }.map { it.toTile(urls, volumeLabel, pagesLabel) }
+    // Kavita lists a chapter that is in no volume under both chapters and storylineChapters
+    val chapters = (detail.chapters + detail.storylineChapters).distinctBy { it.id }
+        .map { it.toTile(urls, chapterLabel, pagesLabel) }
+    val specials = detail.specials.distinctBy { it.id }.map { it.toTile(urls, chapterLabel, pagesLabel) }
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = LocalAppSettings.current.coverSize.minWidthDp.dp),
@@ -467,7 +469,7 @@ private fun LazyGridScope.tileSection(
                 .revealOnOpen(1),
         )
     }
-    itemsIndexed(tiles, key = { _, tile -> tile.key }) { index, tile ->
+    itemsIndexed(tiles, key = { _, tile -> "$title-${tile.key}" }) { index, tile ->
         val badge = downloadBadge(tile)
         SeriesCard(
             modifier = Modifier
