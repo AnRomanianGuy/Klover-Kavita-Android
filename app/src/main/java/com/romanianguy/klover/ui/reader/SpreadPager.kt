@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -132,15 +133,17 @@ fun SpreadPager(
                         }
                     },
             ) {
-                SpreadContent(
-                    spread = spread,
-                    halves = if (flipping) halvesOf(spreads, index, source, rtl) else null,
-                    source = source,
-                    layout = layout,
-                    rtl = rtl,
-                    leftFx = if (flipping) Modifier.graphicsLayer { alpha = if (halfShows(left = true)) 1f else 0f } else Modifier,
-                    rightFx = if (flipping) Modifier.graphicsLayer { alpha = if (halfShows(left = false)) 1f else 0f } else Modifier,
-                )
+                CompositionLocalProvider(LocalPageZoom provides remember(zoom) { PageZoom(zoom) { Offset.Zero } }) {
+                    SpreadContent(
+                        spread = spread,
+                        halves = if (flipping) halvesOf(spreads, index, source, rtl) else null,
+                        source = source,
+                        layout = layout,
+                        rtl = rtl,
+                        leftFx = if (flipping) Modifier.graphicsLayer { alpha = if (halfShows(left = true)) 1f else 0f } else Modifier,
+                        rightFx = if (flipping) Modifier.graphicsLayer { alpha = if (halfShows(left = false)) 1f else 0f } else Modifier,
+                    )
+                }
             }
         }
 
@@ -202,26 +205,32 @@ private fun SpreadHalves(
     shade: (() -> Float)? = null,
 ) {
     val density = LocalDensity.current
+    val zoom = LocalPageZoom.current
+    // each half starts at its own place in the zoomed area
+    val leftZoom = remember(zoom) { zoom?.let { PageZoom(it.state) { Offset.Zero } } }
+    val rightZoom = remember(zoom, hinge) {
+        zoom?.let { z -> PageZoom(z.state) { hinge?.let { Offset(it.right, 0f) } ?: Offset(z.state.size.width / 2f, 0f) } }
+    }
     Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center) {
         if (hinge != null) {
             val leftWidth = with(density) { hinge.left.toDp() }
             val gap = with(density) { hinge.width.toDp() }
             Box(Modifier.width(leftWidth).fillMaxHeight().then(leftFx)) {
-                if (left != null) source.Page(left, Alignment.CenterEnd, Modifier.fillMaxSize())
+                if (left != null) CompositionLocalProvider(LocalPageZoom provides leftZoom) { source.Page(left, Alignment.CenterEnd, Modifier.fillMaxSize()) }
                 if (left != null && shade != null) PageShade(shade)
             }
             Spacer(Modifier.width(gap))
             Box(Modifier.weight(1f).fillMaxHeight().then(rightFx)) {
-                if (right != null) source.Page(right, Alignment.CenterStart, Modifier.fillMaxSize())
+                if (right != null) CompositionLocalProvider(LocalPageZoom provides rightZoom) { source.Page(right, Alignment.CenterStart, Modifier.fillMaxSize()) }
                 if (right != null && shade != null) PageShade(shade)
             }
         } else {
             Box(Modifier.weight(1f).fillMaxHeight().then(leftFx)) {
-                if (left != null) source.Page(left, Alignment.CenterEnd, Modifier.fillMaxSize())
+                if (left != null) CompositionLocalProvider(LocalPageZoom provides leftZoom) { source.Page(left, Alignment.CenterEnd, Modifier.fillMaxSize()) }
                 if (left != null && shade != null) PageShade(shade)
             }
             Box(Modifier.weight(1f).fillMaxHeight().then(rightFx)) {
-                if (right != null) source.Page(right, Alignment.CenterStart, Modifier.fillMaxSize())
+                if (right != null) CompositionLocalProvider(LocalPageZoom provides rightZoom) { source.Page(right, Alignment.CenterStart, Modifier.fillMaxSize()) }
                 if (right != null && shade != null) PageShade(shade)
             }
         }
