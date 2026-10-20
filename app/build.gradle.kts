@@ -25,6 +25,9 @@ android {
         val updateUrl = providers.gradleProperty("kloverUpdateUrl").orNull
             ?: "https://api.github.com/repos/AnRomanianGuy/Klover-Kavita-Android/releases?per_page=10"
         buildConfigField("String", "UPDATE_URL", "\"$updateUrl\"")
+        // -PkloverFdroid (the F-Droid recipe): no update announcement, because the store brings the updates, and an
+        // unsigned release APK for the store to sign
+        buildConfigField("boolean", "UPDATE_CHECK", (!providers.gradleProperty("kloverFdroid").isPresent).toString())
     }
 
     // keystore.properties (not in the repo): storeFile, storePassword, keyAlias, keyPassword. Without it release uses the debug key
@@ -50,7 +53,11 @@ android {
         release {
             // same -PkloverSuffix switch, to measure real startup without replacing the real app
             providers.gradleProperty("kloverSuffix").orNull?.let { applicationIdSuffix = it }
-            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            signingConfig = if (providers.gradleProperty("kloverFdroid").isPresent) {
+                null
+            } else {
+                signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            }
             // shrinks the app and every library; limiting it to androidx / kotlin left all of Material Components (1,400 classes) in.
             // what reflection needs is kept by keepRules/rules.keep and the libraries' consumer rules
             optimization {
@@ -65,6 +72,11 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    // the encrypted list of libraries Google's plugin would add to the APK; F-Droid does not accept it
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 }
 

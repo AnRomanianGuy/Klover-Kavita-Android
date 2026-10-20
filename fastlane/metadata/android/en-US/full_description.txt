@@ -1,0 +1,39 @@
+Klover is an unofficial Android app for people who run a <a href="https://www.kavitareader.com/">Kavita</a> server and want a reader that feels at home on their phone. You need your own Kavita server to use it.
+
+<b>Readers</b>
+<ul>
+<li>Manga, comics and webtoons, with tap zones, zoom and double-tap, left-to-right or right-to-left</li>
+<li>A native EPUB reader (no web view) that follows much of the book's own CSS and draws tables and SVG pictures</li>
+<li>PDF with sharp zoom</li>
+<li>Read aloud for books: it keeps going with the screen off and shows as a media control, with the cover, on the lock screen and in quick settings</li>
+</ul>
+
+<b>Made for foldables</b>
+<ul>
+<li>Two pages at once when unfolded, and pages that turn like paper when held half open like a book</li>
+<li>Tabletop mode, and layouts that keep clear of the fold</li>
+</ul>
+
+<b>Offline and in sync</b>
+<ul>
+<li>Downloads for whole series, with Wi-Fi only, pause and resume, and delete after reading</li>
+<li>Your progress goes back to Kavita, also when you read offline</li>
+</ul>
+
+<b>Reading stats</b>
+<ul>
+<li>A "time left" estimate that learns how fast you read each kind of content</li>
+<li>Streaks, a weekly goal and a clover garden that grows as you finish chapters</li>
+<li>Backup: export and import your streak, stats, bookmarks, settings and profile look</li>
+</ul>
+
+<b>Yours</b>
+<ul>
+<li>Several accounts on one device, Material 3 Expressive design, wallpaper colours or your own, true black</li>
+<li>Seasonal decorations around holidays, and a switch to turn them off</li>
+</ul>
+
+<b>Private</b>
+There are no analytics, no ads and no crash reporting. Your sign-in is kept encrypted with the Android Keystore. The app talks to your Kavita server, plus an optional lookup of chapter names in MangaDex's public catalogue that you can switch off.
+
+Klover is not affiliated with Kavita. It was made with the help of an AI coding assistant; the README says how.

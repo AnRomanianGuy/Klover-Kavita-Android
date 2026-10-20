@@ -556,7 +556,7 @@ private fun ReaderTab(settings: AppSettings, vm: SettingsViewModel) {
             checked = settings.keepScreenOn,
             onChange = { vm.set(PrefKeys.KEEP_SCREEN_ON, it) },
         )
-        SwitchSetting(
+        if (BuildConfig.UPDATE_CHECK) SwitchSetting(
             title = R.string.settings_update_check,
             hint = R.string.settings_update_check_hint,
             checked = settings.updateCheck,

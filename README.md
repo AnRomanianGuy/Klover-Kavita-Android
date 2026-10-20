@@ -148,7 +148,9 @@ The code is kept plain on purpose, with few comments. Parts of it were written w
   and column spans. SVG pictures work: inline SVG, SVG files and covers wrapped in an SVG. Pictures keep the size
   the book asks for.
 - **Read aloud** for EPUB with the system voice: the current sentence is highlighted, the page follows the voice, and
-  you can set speed and a sleep timer.
+  you can set speed and a sleep timer. It keeps going with the screen off or another app in front, moves on from section
+  to section by itself, and shows as a media control (notification, lock screen, quick settings) with the book's cover,
+  previous and next sentence, and headset buttons. Closing the reader ends it.
 - **PDF** through Android's own renderer. Zooming in renders the part you are looking at again at screen resolution,
   so text stays sharp.
 - **Page turn styles:** slide, fade, instant, or a **book flip**.
@@ -274,6 +276,22 @@ the new APK and install it over the old one, your sign-in and data stay. Release
 signed with the project's own key. The very first v1.0 upload was signed with a development key and was replaced; if you
 installed that one, uninstall it once before installing the current one.
 
+### Other ways to get it
+
+- **Obtainium.** Klover works with [Obtainium](https://obtainium.imranr.dev/), which watches this repository's Releases
+  and installs new versions for you. In Obtainium choose *Add app* and paste
+  `https://github.com/AnRomanianGuy/Klover-Kavita-Android`, or
+  [tap here on the phone](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/AnRomanianGuy/Klover-Kavita-Android).
+  It is the same APK, signed with the same key as the one you would download by hand. Obtainium then does the telling, so
+  you can switch off Klover's own update card in Settings -> Account.
+- **F-Droid.** Being prepared: the build is ready for it (see below) and the recipe is drafted in `fdroid/`, but it is not
+  in the F-Droid repository yet. F-Droid signs its apps with its own key, so an F-Droid install and a GitHub or Obtainium
+  install cannot update each other; uninstall once to switch from one to the other (your data is in the backup file, see
+  [Backup](#profiles-and-accounts)).
+- **Building for a store.** `./gradlew assembleRelease -PkloverFdroid=true` makes an unsigned release APK for the store to
+  sign, without the update announcement (a store does the updating) and without the dependency block Google's plugin
+  adds. The store listing text is in `fastlane/metadata/android/`.
+
 ---
 
 ## Built with
@@ -300,7 +318,7 @@ Next, roughly in this order. These are ideas, not promises, and there are no dat
 - [x] Publish the source code
 - [x] Sharper PDF zoom (the visible part is rendered again at screen resolution)
 - [x] Update announcement: a note in the app when a newer version is on GitHub (can be switched off)
-- [ ] Read aloud in the background, with lock-screen and notification controls and headset buttons
+- [x] Read aloud in the background, with lock-screen and notification controls and headset buttons
 - [ ] Quiet notifications when a series on Want to read gets a new chapter
 - [ ] Reading lists and collections
 - [ ] Search inside a book, and your own highlights and notes in EPUB
@@ -313,7 +331,8 @@ Next, roughly in this order. These are ideas, not promises, and there are no dat
 - [ ] More seasonal events (St. Patrick's Day, Christmas, New Year, Valentine's)
 - [ ] Home screen widgets: continue reading and streak
 - [ ] Automatic builds and checks on GitHub for every push and release
-- [ ] More places to get it: IzzyOnDroid, F-Droid, Obtainium
+- [x] Install and update with Obtainium (straight from the GitHub releases)
+- [ ] F-Droid (the build and the listing are ready, the recipe in `fdroid/` still has to be sent to F-Droid) and IzzyOnDroid
 - [ ] A "copy diagnostics" button for bug reports, where you choose what to share
 - [ ] More languages (the UI is English only today)
 - [ ] Bookmarks in the EPUB reader (comics have them already)

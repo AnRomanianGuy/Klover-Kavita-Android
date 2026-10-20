@@ -206,6 +206,7 @@ fun AboutTab(viewModel: AboutViewModel = koinViewModel()) {
 
 @Composable
 private fun UpdatesCard(viewModel: AboutViewModel, ui: AboutUi) {
+    if (!BuildConfig.UPDATE_CHECK) return
     val enabled = LocalAppSettings.current.updateCheck
     val found by viewModel.announcement.collectAsStateWithLifecycle()
     var details by remember { mutableStateOf(false) }

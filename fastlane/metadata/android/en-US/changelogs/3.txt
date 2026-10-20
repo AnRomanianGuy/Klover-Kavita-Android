@@ -1,0 +1,3 @@
+Read aloud keeps going with the screen off and shows as a media control with the book cover, with headset buttons and a sleep timer.
+
+The F-Droid build has no update announcement, the store does the updating.

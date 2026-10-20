@@ -1,0 +1,1 @@
+An update announcement, backup export and import, a much more capable EPUB reader (CSS, tables, SVG), sharper PDF zoom, Halloween decorations, and a fix for a crash on series with loose chapters.

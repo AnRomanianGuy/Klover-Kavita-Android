@@ -12,6 +12,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.romanianguy.klover.BuildConfig
 import com.romanianguy.klover.data.backup.PrefEntry
 import com.romanianguy.klover.data.backup.putEntries
 import com.romanianguy.klover.data.backup.toEntries
@@ -322,7 +323,8 @@ internal fun Preferences.toAppSettings(): AppSettings {
         bookHyphenate = this[PrefKeys.BOOK_HYPHENATE] ?: defaults.bookHyphenate,
         bookStyles = this[PrefKeys.BOOK_STYLES] ?: defaults.bookStyles,
         seasonalEvents = this[PrefKeys.SEASONAL_EVENTS] ?: defaults.seasonalEvents,
-        updateCheck = this[PrefKeys.UPDATE_CHECK] ?: defaults.updateCheck,
+        // a build for a store that does the updating has no announcement at all
+        updateCheck = BuildConfig.UPDATE_CHECK && (this[PrefKeys.UPDATE_CHECK] ?: defaults.updateCheck),
 
         downloadWifiOnly = this[PrefKeys.DOWNLOAD_WIFI_ONLY] ?: defaults.downloadWifiOnly,
         downloadParallel = (this[PrefKeys.DOWNLOAD_PARALLEL] ?: defaults.downloadParallel).coerceIn(1, 3),
