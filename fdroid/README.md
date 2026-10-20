@@ -4,3 +4,6 @@ and checked with F-Droid's own `fdroid rewritemeta`, `fdroid lint` and `fdroid c
 
 The store listing (title, descriptions, changelogs, icon, screenshots) is in `fastlane/metadata/android/en-US/` in the root of
 the repository, where F-Droid reads it.
+
+The build points at a commit rather than the `v1.1.1` tag because F-Droid only takes the icon and screenshots from the source it
+builds, and they were added after that tag. The app code in both is identical.

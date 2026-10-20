@@ -15,7 +15,7 @@ Repo: https://github.com/AnRomanianGuy/Klover-Kavita-Android.git
 Builds:
   - versionName: 1.1.1
     versionCode: 3
-    commit: v1.1.1
+    commit: fe577d1400548c210b52e57db68dd252150739bd
     subdir: app
     sudo:
       - apt-get update
