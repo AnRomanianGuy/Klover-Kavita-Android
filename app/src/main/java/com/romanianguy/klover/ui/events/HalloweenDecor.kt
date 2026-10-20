@@ -15,17 +15,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -80,7 +82,7 @@ fun SeasonalPageDecor(modifier: Modifier = Modifier) {
             Triple(0.18f, 0.29f, 24f), Triple(0.34f, 0.36f, 17f), Triple(0.50f, 0.3f, 21f), Triple(0.62f, 0.41f, 15f),
         )
         for ((fx, fy, span) in bats) {
-            drawBat(Offset(w * fx, h * fy + 12 * dp * (1f - t)), span * dp, colors.bat.copy(alpha = t))
+            drawBat(Offset(w * fx, h * fy + 12 * dp * (1f - t)), span * dp, colors.bat.copy(alpha = t), tilt = (span.toInt() % 3 - 1) * 10f, flap = if (span > 20f) 1f else 0.6f)
         }
         // pumpkins at the foot of the page, the Continue button above them
         fun peek(x: Float, width: Float) {
@@ -155,7 +157,7 @@ private fun HalloweenDecor(bottomInset: Dp, startX: Dp, perched: Boolean, modifi
             }
             for ((i, spot) in spots.withIndex()) {
                 val s = (if (i % 2 == 0) 22f else 16f) * dp * scale
-                drawBat(Offset(x0 + room * spot.first, ry * spot.second + s * 0.4f * (1f - t)), s, bat.copy(alpha = t))
+                drawBat(Offset(x0 + room * spot.first, ry * spot.second + s * 0.4f * (1f - t)), s, bat.copy(alpha = t), tilt = ((i % 3) - 1) * 10f, flap = if (i % 2 == 0) 1f else 0.6f)
             }
 
             // pumpkins in the bottom corners, over what is there (on a phone they sit on the floating bar instead)
@@ -214,82 +216,169 @@ private fun overshoot(t: Float): Float {
     return 1f + (c + 1f) * x * x * x + c * x * x
 }
 
-// a web in a corner, [rx] wide and [ry] tall: strands out from the corner, and rings joining them that sag towards it
+// a web in a corner, [rx] wide and [ry] tall: thick strands out from the corner, a thin thread winding round them that sags
+// between the strands, fading towards the outside, with a few drops of dew and loose threads
 private fun DrawScope.drawWeb(corner: Offset, rx: Float, ry: Float, dir: Float, color: Color) {
-    val strands = 6
-    val rings = 5
-    val width = 1.1f * density
+    val strands = 7
+    val rings = 6
+    val reach = maxOf(rx, ry)
+    val fade = Brush.radialGradient(listOf(color, color.copy(alpha = color.alpha * 0.45f)), corner, reach)
+    val radial = 1.5f * density
+    val capture = Stroke(width = 0.9f * density, cap = StrokeCap.Round)
     fun point(r: Float, quarter: Float) = Offset(
         corner.x + dir * rx * r * sin(quarter * PI.toFloat() / 2f),
         corner.y + ry * r * cos(quarter * PI.toFloat() / 2f),
     )
-    for (i in 0 until strands) drawLine(color, corner, point(1f, i / (strands - 1f)), width, StrokeCap.Round)
-    val stroke = Stroke(width = width, cap = StrokeCap.Round)
+    for (i in 0 until strands) drawLine(fade, corner, point(1f, i / (strands - 1f)), radial, StrokeCap.Round)
+    val dew = ArrayList<Offset>()
     for (k in 1..rings) {
         val r = k / rings.toFloat()
         val path = Path()
-        path.moveTo(point(r, 0f).x, point(r, 0f).y)
+        val first = point(r, 0f)
+        path.moveTo(first.x, first.y)
         for (i in 0 until strands - 1) {
             val from = i / (strands - 1f)
             val to = (i + 1) / (strands - 1f)
             val control = point(r * 0.84f, (from + to) / 2f)
             val end = point(r, to)
+            val start = point(r, from)
             path.quadraticTo(control.x, control.y, end.x, end.y)
+            // a drop hangs where the thread sags most, on some of the rings
+            if ((k + i) % 3 == 0 && k > 1) dew += Offset(0.25f * start.x + 0.5f * control.x + 0.25f * end.x, 0.25f * start.y + 0.5f * control.y + 0.25f * end.y)
         }
-        drawPath(path, color, style = stroke)
+        drawPath(path, fade, style = capture)
+    }
+    for (d in dew) {
+        drawCircle(color.copy(alpha = (color.alpha * 0.9f).coerceAtMost(0.8f)), 2f * density, d)
+        drawCircle(Color.White.copy(alpha = color.alpha * 1.3f), 0.8f * density, Offset(d.x - 0.5f * density, d.y - 0.6f * density))
+    }
+    // two loose threads, drooping from the edge
+    for (q in listOf(0.38f, 0.74f)) {
+        val from = point(1f, q)
+        val to = Offset(from.x + dir * 6f * density, from.y + 15f * density)
+        val loose = Path()
+        loose.moveTo(from.x, from.y)
+        loose.quadraticTo(from.x + dir * 1f * density, from.y + 8f * density, to.x, to.y)
+        drawPath(loose, color.copy(alpha = color.alpha * 0.6f), style = capture)
     }
 }
 
 // [unit] is what a dp is worth here, smaller on a short band
 private fun DrawScope.drawSpider(top: Offset, thread: Float, unit: Float, body: Color, line: Color) {
-    drawLine(line, top, Offset(top.x, top.y + thread), 1f * unit)
-    val abdomen = Offset(top.x, top.y + thread + 8 * unit)
-    val head = Offset(top.x, top.y + thread + 19 * unit)
-    val legs = Stroke(width = 1.4f * unit, cap = StrokeCap.Round)
+    val light = lerp(body, Color.White, 0.5f)
+    val dark = lerp(body, Color.Black, 0.45f)
+    drawLine(line, top, Offset(top.x, top.y + thread), 1.1f * unit, StrokeCap.Round)
+    val abdomen = Offset(top.x, top.y + thread + 12 * unit)
+    val head = Offset(top.x, top.y + thread + 26 * unit)
+
+    // eight legs of two bent segments that taper, each with a shadow under it and a joint at the knee
     for (side in listOf(-1f, 1f)) {
         for (i in 0 until 4) {
-            val start = Offset(head.x + side * 2f * unit, head.y - 2f * unit + i * 1.5f * unit)
-            val knee = Offset(head.x + side * (13f + i * 1.5f) * unit, head.y - 9f * unit + i * 4f * unit)
-            val foot = Offset(head.x + side * (22f + i * 1.5f) * unit, head.y + (4f + i * 6f) * unit)
-            val path = Path()
-            path.moveTo(start.x, start.y)
-            path.lineTo(knee.x, knee.y)
-            path.lineTo(foot.x, foot.y)
-            drawPath(path, body, style = legs)
+            val start = Offset(head.x + side * 3f * unit, head.y - 4f * unit + i * 2.2f * unit)
+            val knee = Offset(head.x + side * (15f + i * 1f) * unit, head.y + (-17f + i * 8f) * unit)
+            val mid = Offset(head.x + side * 25f * unit, head.y + (-8f + i * 9.5f) * unit)
+            val foot = Offset(head.x + side * (28f - i * 0.5f) * unit, head.y + (3f + i * 10.5f) * unit)
+            val upper = Path()
+            upper.moveTo(start.x, start.y)
+            upper.quadraticTo((start.x + knee.x) / 2f, knee.y - 1f * unit, knee.x, knee.y)
+            val lower = Path()
+            lower.moveTo(knee.x, knee.y)
+            lower.quadraticTo(mid.x + side * 1f * unit, mid.y - 2f * unit, foot.x, foot.y)
+            drawPath(upper, dark, style = Stroke(2.3f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            drawPath(lower, dark, style = Stroke(1.7f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            drawPath(upper, body, style = Stroke(1.6f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            drawPath(lower, body, style = Stroke(1.1f * unit, cap = StrokeCap.Round, join = StrokeJoin.Round))
+            drawCircle(light.copy(alpha = 0.8f), 0.9f * unit, knee)
         }
     }
-    drawCircle(body, 7.5f * unit, abdomen)
-    drawCircle(body, 5f * unit, head)
-    drawCircle(Color(0xFFFF6B4A), 1.3f * unit, Offset(head.x - 1.9f * unit, head.y + 1.5f * unit))
-    drawCircle(Color(0xFFFF6B4A), 1.3f * unit, Offset(head.x + 1.9f * unit, head.y + 1.5f * unit))
-}
 
-private fun DrawScope.drawBat(center: Offset, span: Float, color: Color) {
-    fun wing(dir: Float): Path {
-        val p = Path()
-        p.moveTo(center.x + dir * 0.08f * span, center.y)
-        p.quadraticTo(center.x + dir * 0.5f * span, center.y - 0.62f * span, center.x + dir * span, center.y - 0.18f * span)
-        p.quadraticTo(center.x + dir * 0.86f * span, center.y + 0.08f * span, center.x + dir * 0.7f * span, center.y + 0.04f * span)
-        p.quadraticTo(center.x + dir * 0.55f * span, center.y + 0.32f * span, center.x + dir * 0.4f * span, center.y + 0.14f * span)
-        p.quadraticTo(center.x + dir * 0.24f * span, center.y + 0.42f * span, center.x + dir * 0.08f * span, center.y + 0.2f * span)
-        p.close()
-        return p
+    // the abdomen, round and glossy, with a red hourglass on it
+    val ar = Size(21f * unit, 26f * unit)
+    val aTop = Offset(abdomen.x - ar.width / 2f, abdomen.y - ar.height / 2f)
+    drawOval(
+        Brush.radialGradient(listOf(light, body, dark), Offset(abdomen.x - 4f * unit, abdomen.y - 6f * unit), 17f * unit),
+        aTop,
+        ar,
+    )
+    drawOval(dark.copy(alpha = 0.7f), aTop, ar, style = Stroke(0.8f * unit))
+    drawOval(Color.White.copy(alpha = 0.5f), Offset(abdomen.x - 6f * unit, abdomen.y - 9f * unit), Size(5f * unit, 7f * unit))
+    val hourglass = Path()
+    hourglass.moveTo(abdomen.x - 3.2f * unit, abdomen.y - 1f * unit)
+    hourglass.lineTo(abdomen.x + 3.2f * unit, abdomen.y - 1f * unit)
+    hourglass.lineTo(abdomen.x, abdomen.y + 3.5f * unit)
+    hourglass.close()
+    hourglass.moveTo(abdomen.x - 3.2f * unit, abdomen.y + 8f * unit)
+    hourglass.lineTo(abdomen.x + 3.2f * unit, abdomen.y + 8f * unit)
+    hourglass.lineTo(abdomen.x, abdomen.y + 3.5f * unit)
+    hourglass.close()
+    drawPath(hourglass, Color(0xFFE5402F).copy(alpha = 0.9f))
+
+    // the head, with a pair of glowing eyes and small ones, and fangs
+    drawCircle(
+        Brush.radialGradient(listOf(light, body, dark), Offset(head.x - 2f * unit, head.y - 2.5f * unit), 8f * unit),
+        6.8f * unit,
+        head,
+    )
+    for (side in listOf(-1f, 1f)) {
+        val eye = Offset(head.x + side * 2.4f * unit, head.y + 1.2f * unit)
+        drawCircle(Color(0xFFFF5A3C).copy(alpha = 0.35f), 3.2f * unit, eye)
+        drawCircle(Color(0xFFFF5A3C), 1.6f * unit, eye)
+        drawCircle(Color.White.copy(alpha = 0.9f), 0.5f * unit, Offset(eye.x - 0.4f * unit, eye.y - 0.5f * unit))
+        drawCircle(Color(0xFFFF8A6A), 0.8f * unit, Offset(head.x + side * 4.4f * unit, head.y - 0.8f * unit))
+        drawLine(dark, Offset(head.x + side * 1.2f * unit, head.y + 5f * unit), Offset(head.x + side * 1.6f * unit, head.y + 8f * unit), 1.3f * unit, StrokeCap.Round)
     }
-    drawPath(wing(1f), color)
-    drawPath(wing(-1f), color)
-    drawOval(color, Offset(center.x - 0.1f * span, center.y - 0.16f * span), Size(0.2f * span, 0.4f * span))
-    val ears = Path()
-    ears.moveTo(center.x - 0.1f * span, center.y - 0.12f * span)
-    ears.lineTo(center.x - 0.07f * span, center.y - 0.3f * span)
-    ears.lineTo(center.x, center.y - 0.15f * span)
-    ears.lineTo(center.x + 0.07f * span, center.y - 0.3f * span)
-    ears.lineTo(center.x + 0.1f * span, center.y - 0.12f * span)
-    ears.close()
-    drawPath(ears, color)
 }
 
-// a lit jack-o'-lantern: a wide body of five ribs shaded from light on top to dark below, a curled stem, and a glowing
-// face. [width] is its full width, [alpha] fades it in
+// a bat in flight: wings with three finger bones and a scalloped edge, shaded from the body outwards, a head with ears
+// and glowing eyes. [tilt] leans it, [flap] is how high the wings are held (1 up, less is more spread)
+private fun DrawScope.drawBat(center: Offset, span: Float, color: Color, tilt: Float = 0f, flap: Float = 1f) {
+    val light = lerp(color, Color.White, 0.28f)
+    val dark = lerp(color, Color.Black, 0.5f)
+    rotate(tilt, center) {
+        fun p(dir: Float, x: Float, y: Float) = Offset(center.x + dir * x * span, center.y + y * span * flap.coerceAtLeast(0.4f).let { if (y < 0f) it else 0.7f + 0.3f * it })
+        for (dir in listOf(-1f, 1f)) {
+            val shoulder = p(dir, 0.1f, -0.02f)
+            val wrist = p(dir, 0.55f, -0.36f)
+            val tip1 = p(dir, 1.02f, -0.16f)
+            val tip2 = p(dir, 0.86f, 0.17f)
+            val tip3 = p(dir, 0.6f, 0.3f)
+            val tip4 = p(dir, 0.33f, 0.24f)
+            val back = p(dir, 0.1f, 0.2f)
+            val wing = Path()
+            wing.moveTo(shoulder.x, shoulder.y)
+            wing.quadraticTo(p(dir, 0.34f, -0.34f).x, p(dir, 0.34f, -0.34f).y, wrist.x, wrist.y)
+            wing.quadraticTo(p(dir, 0.82f, -0.38f).x, p(dir, 0.82f, -0.38f).y, tip1.x, tip1.y)
+            // the edge between the finger tips curves in, as a bat's skin does
+            wing.quadraticTo(p(dir, 0.88f, 0.02f).x, p(dir, 0.88f, 0.02f).y, tip2.x, tip2.y)
+            wing.quadraticTo(p(dir, 0.72f, 0.12f).x, p(dir, 0.72f, 0.12f).y, tip3.x, tip3.y)
+            wing.quadraticTo(p(dir, 0.46f, 0.14f).x, p(dir, 0.46f, 0.14f).y, tip4.x, tip4.y)
+            wing.quadraticTo(p(dir, 0.2f, 0.1f).x, p(dir, 0.2f, 0.1f).y, back.x, back.y)
+            wing.close()
+            drawPath(wing, Brush.linearGradient(listOf(dark, color, light), Offset(center.x, center.y), Offset(center.x + dir * span, center.y - 0.2f * span)))
+            val bone = Stroke(width = (span * 0.035f).coerceAtLeast(0.8f), cap = StrokeCap.Round)
+            for (tip in listOf(tip1, tip2, tip3, tip4)) {
+                val b = Path()
+                b.moveTo(wrist.x, wrist.y)
+                b.lineTo(tip.x, tip.y)
+                drawPath(b, dark.copy(alpha = 0.7f), style = bone)
+            }
+        }
+        drawOval(Brush.verticalGradient(listOf(light, dark), center.y - 0.2f * span, center.y + 0.26f * span), Offset(center.x - 0.1f * span, center.y - 0.16f * span), Size(0.2f * span, 0.42f * span))
+        drawCircle(Brush.radialGradient(listOf(light, color), Offset(center.x - 0.02f * span, center.y - 0.2f * span), 0.12f * span), 0.1f * span, Offset(center.x, center.y - 0.17f * span))
+        for (side in listOf(-1f, 1f)) {
+            val ear = Path()
+            ear.moveTo(center.x + side * 0.02f * span, center.y - 0.24f * span)
+            ear.lineTo(center.x + side * 0.1f * span, center.y - 0.4f * span)
+            ear.lineTo(center.x + side * 0.12f * span, center.y - 0.2f * span)
+            ear.close()
+            drawPath(ear, color)
+            drawCircle(Color(0xFFE8F26B), (span * 0.018f).coerceAtLeast(0.7f), Offset(center.x + side * 0.04f * span, center.y - 0.18f * span))
+        }
+    }
+}
+
+// a lit jack-o'-lantern: a wide body of five ribs, each shaded round with a highlight and a darker edge, a curled stem with
+// a tendril and a leaf, and a face lit from inside by a candle. [width] is its full width, [alpha] fades it in
 internal fun DrawScope.drawPumpkin(center: Offset, width: Float, alpha: Float = 1f, tilt: Float = 0f) {
     if (tilt == 0f) drawUprightPumpkin(center, width, alpha) else rotate(tilt, center) { drawUprightPumpkin(center, width, alpha) }
 }
@@ -297,86 +386,123 @@ internal fun DrawScope.drawPumpkin(center: Offset, width: Float, alpha: Float = 
 private fun DrawScope.drawUprightPumpkin(center: Offset, width: Float, alpha: Float) {
     val h = width * 0.78f
     val top = center.y - h / 2f
-    fun c(argb: Long) = Color(argb).copy(alpha = alpha)
+    fun c(argb: Long, a: Float = 1f) = Color(argb).copy(alpha = (alpha * a).coerceIn(0f, 1f))
 
-    // the glow stays inside a circle that the corner of the screen does not cut
-    drawCircle(
-        Brush.radialGradient(listOf(c(0xFFF28C1C).copy(alpha = 0.16f * alpha), Color.Transparent), center, width * 0.62f),
-        width * 0.62f,
-        center,
+    // the glow of the candle on its surroundings, and the shadow it sits in
+    drawCircle(Brush.radialGradient(listOf(c(0xFFFFA43A, 0.2f), Color.Transparent), center, width * 0.66f), width * 0.66f, center)
+    val shadowTop = Offset(center.x - width * 0.46f, center.y + h * 0.36f)
+    drawOval(
+        Brush.radialGradient(listOf(Color.Black.copy(alpha = 0.4f * alpha), Color.Transparent), Offset(center.x, shadowTop.y + h * 0.1f), width * 0.5f),
+        shadowTop,
+        Size(width * 0.92f, h * 0.22f),
     )
-    // where it sits
-    drawOval(Color.Black.copy(alpha = 0.28f * alpha), Offset(center.x - width * 0.44f, center.y + h * 0.4f), Size(width * 0.88f, h * 0.16f))
 
-    // the ribs, back to front: outer ones darker, the middle one in front and lightest
+    // the ribs, back to front: outer ones darkest, the one in the middle lightest; each is shaded round, light from above left
+    class Rib(val at: Float, val w: Float, val light: Long, val mid: Long, val dark: Long)
     val ribs = listOf(
-        Triple(-0.33f, 0.36f, longArrayOf(0xFFD9700F, 0xFFA84D08)),
-        Triple(0.33f, 0.36f, longArrayOf(0xFFD9700F, 0xFFA84D08)),
-        Triple(-0.17f, 0.44f, longArrayOf(0xFFEE8618, 0xFFC4600B)),
-        Triple(0.17f, 0.44f, longArrayOf(0xFFEE8618, 0xFFC4600B)),
-        Triple(0f, 0.46f, longArrayOf(0xFFFFA733, 0xFFE57A14)),
+        Rib(-0.34f, 0.36f, 0xFFE8841A, 0xFFC25A0B, 0xFF8F3E05),
+        Rib(0.34f, 0.36f, 0xFFE8841A, 0xFFC25A0B, 0xFF8F3E05),
+        Rib(-0.18f, 0.44f, 0xFFF89A2A, 0xFFDB6E10, 0xFFA64908),
+        Rib(0.18f, 0.44f, 0xFFF89A2A, 0xFFDB6E10, 0xFFA64908),
+        Rib(0f, 0.47f, 0xFFFFB640, 0xFFEE8419, 0xFFBC5A0C),
     )
-    for ((offset, w, colors) in ribs) {
-        val rw = width * w
-        val left = center.x + width * offset - rw / 2f
-        drawOval(
-            Brush.verticalGradient(listOf(c(colors[0]), c(colors[1])), startY = top, endY = top + h),
-            Offset(left, top),
-            Size(rw, h),
+    val seam = (width * 0.016f).coerceAtLeast(1f)
+    for (rib in ribs) {
+        val rw = width * rib.w
+        val left = center.x + width * rib.at - rw / 2f
+        val brush = Brush.radialGradient(
+            listOf(c(rib.light), c(rib.mid), c(rib.dark)),
+            Offset(left + rw * 0.36f, top + h * 0.3f),
+            maxOf(rw, h) * 0.78f,
         )
-        drawOval(Rind.copy(alpha = 0.85f * alpha), Offset(left, top), Size(rw, h), style = Stroke(width = (width * 0.018f).coerceAtLeast(1f)))
+        drawOval(brush, Offset(left, top), Size(rw, h))
+        // the darker rim of the rib, and a thin light line inside it where the light catches
+        drawOval(c(0xFF8C3A05, 0.8f), Offset(left, top), Size(rw, h), style = Stroke(seam))
+        drawOval(c(0xFFFFD28A, 0.22f), Offset(left + rw * 0.1f, top + h * 0.06f), Size(rw * 0.8f, h * 0.88f), style = Stroke(seam * 0.8f))
     }
-    // a soft shine
-    drawOval(Color.White.copy(alpha = 0.16f * alpha), Offset(center.x - width * 0.2f, top + h * 0.12f), Size(width * 0.14f, h * 0.2f))
+    // a shine on the middle rib
+    drawOval(Color.White.copy(alpha = 0.2f * alpha), Offset(center.x - width * 0.2f, top + h * 0.1f), Size(width * 0.12f, h * 0.24f))
 
-    // the stem, bent to one side
+    // the dip around the stem
+    drawOval(c(0xFF7A3304, 0.55f), Offset(center.x - width * 0.14f, top - h * 0.03f), Size(width * 0.28f, h * 0.13f))
+
+    // the stem: curved, shaded across, cut at the top; a tendril that curls and a leaf
     val stem = Path()
-    stem.moveTo(center.x - width * 0.06f, top + h * 0.06f)
-    stem.quadraticTo(center.x - width * 0.05f, top - h * 0.12f, center.x + width * 0.07f, top - h * 0.18f)
-    stem.lineTo(center.x + width * 0.13f, top - h * 0.1f)
-    stem.quadraticTo(center.x + width * 0.04f, top - h * 0.04f, center.x + width * 0.06f, top + h * 0.06f)
+    stem.moveTo(center.x - width * 0.07f, top + h * 0.05f)
+    stem.quadraticTo(center.x - width * 0.06f, top - h * 0.14f, center.x + width * 0.06f, top - h * 0.2f)
+    stem.lineTo(center.x + width * 0.15f, top - h * 0.12f)
+    stem.quadraticTo(center.x + width * 0.05f, top - h * 0.05f, center.x + width * 0.07f, top + h * 0.05f)
     stem.close()
-    drawPath(stem, Brush.verticalGradient(listOf(c(0xFF5B8A32), c(0xFF3F6420)), startY = top - h * 0.18f, endY = top + h * 0.06f))
+    drawPath(
+        stem,
+        Brush.horizontalGradient(listOf(c(0xFF86AB45), c(0xFF4F7A28), c(0xFF2F521A)), center.x - width * 0.07f, center.x + width * 0.15f),
+    )
+    drawOval(c(0xFFB5D468), Offset(center.x + width * 0.045f, top - h * 0.24f), Size(width * 0.13f, h * 0.1f))
+    val tendril = Path()
+    tendril.moveTo(center.x + width * 0.08f, top - h * 0.02f)
+    tendril.cubicTo(
+        center.x + width * 0.3f, top - h * 0.1f,
+        center.x + width * 0.34f, top + h * 0.14f,
+        center.x + width * 0.24f, top + h * 0.1f,
+    )
+    tendril.cubicTo(
+        center.x + width * 0.19f, top + h * 0.08f,
+        center.x + width * 0.22f, top + h * 0.01f,
+        center.x + width * 0.27f, top + h * 0.03f,
+    )
+    drawPath(tendril, c(0xFF4F7A28), style = Stroke(width * 0.022f, cap = StrokeCap.Round))
+    val leaf = Path()
+    leaf.moveTo(center.x - width * 0.06f, top + h * 0.0f)
+    leaf.quadraticTo(center.x - width * 0.2f, top - h * 0.16f, center.x - width * 0.36f, top - h * 0.05f)
+    leaf.quadraticTo(center.x - width * 0.22f, top + h * 0.1f, center.x - width * 0.06f, top + h * 0.0f)
+    leaf.close()
+    drawPath(leaf, Brush.linearGradient(listOf(c(0xFF86AB45), c(0xFF3F6420)), Offset(center.x - width * 0.06f, top - h * 0.1f), Offset(center.x - width * 0.36f, top))
+    )
+    val vein = Path()
+    vein.moveTo(center.x - width * 0.07f, top - h * 0.0f)
+    vein.quadraticTo(center.x - width * 0.2f, top - h * 0.06f, center.x - width * 0.33f, top - h * 0.05f)
+    drawPath(vein, c(0xFF2F521A, 0.8f), style = Stroke(width * 0.01f, cap = StrokeCap.Round))
 
-    // the face: slanted eyes, a nose and a toothy mouth, lit from inside
-    val lit = Glow.copy(alpha = alpha)
-    val halo = Glow.copy(alpha = 0.22f * alpha)
-    fun triangle(a: Offset, b: Offset, cc: Offset): Path {
+    // the light of the candle spilling over the face
+    val face = Offset(center.x, center.y + h * 0.04f)
+    drawCircle(Brush.radialGradient(listOf(c(0xFFFFC94A, 0.3f), Color.Transparent), face, width * 0.4f), width * 0.4f, face)
+
+    // eyes, nose and mouth lit from inside: a soft halo, the flame colour, a bright core
+    fun lit(path: Path, centroid: Offset) {
+        drawPath(path, c(0xFFFFB02E, 0.28f), style = Stroke(width * 0.07f, join = StrokeJoin.Round))
+        drawPath(path, c(0xFFFFCB4F))
+        scale(0.55f, centroid) { drawPath(path, c(0xFFFFF4BC)) }
+    }
+    fun triangle(a: Offset, b: Offset, d: Offset): Path {
         val p = Path()
         p.moveTo(a.x, a.y)
         p.lineTo(b.x, b.y)
-        p.lineTo(cc.x, cc.y)
+        p.lineTo(d.x, d.y)
         p.close()
         return p
     }
     for (side in listOf(-1f, 1f)) {
         val ex = center.x + side * width * 0.16f
         val ey = center.y - h * 0.1f
-        val eye = triangle(
-            Offset(ex - side * width * 0.06f, ey + width * 0.07f),
-            Offset(ex + side * width * 0.07f, ey + width * 0.05f),
-            Offset(ex + side * width * 0.01f, ey - width * 0.07f),
-        )
-        drawPath(eye, halo, style = Stroke(width = width * 0.05f))
-        drawPath(eye, lit)
+        val a = Offset(ex - side * width * 0.065f, ey + width * 0.07f)
+        val b = Offset(ex + side * width * 0.075f, ey + width * 0.05f)
+        val d = Offset(ex + side * width * 0.01f, ey - width * 0.075f)
+        lit(triangle(a, b, d), Offset((a.x + b.x + d.x) / 3f, (a.y + b.y + d.y) / 3f))
     }
-    val nose = triangle(
-        Offset(center.x - width * 0.035f, center.y + h * 0.05f),
-        Offset(center.x + width * 0.035f, center.y + h * 0.05f),
-        Offset(center.x, center.y - h * 0.02f),
-    )
-    drawPath(nose, lit)
+    val noseA = Offset(center.x - width * 0.035f, center.y + h * 0.05f)
+    val noseB = Offset(center.x + width * 0.035f, center.y + h * 0.05f)
+    val noseC = Offset(center.x, center.y - h * 0.02f)
+    lit(triangle(noseA, noseB, noseC), Offset(center.x, center.y + h * 0.027f))
     val mouth = Path()
-    val left = center.x - width * 0.25f
-    val my = center.y + h * 0.14f
+    val left = center.x - width * 0.26f
+    val my = center.y + h * 0.15f
     mouth.moveTo(left, my)
     val teeth = 6
     for (i in 1..teeth) {
-        val x = left + width * 0.5f * i / teeth
-        mouth.lineTo(x, if (i % 2 == 1) my + width * 0.07f else my)
+        val x = left + width * 0.52f * i / teeth
+        mouth.lineTo(x, if (i % 2 == 1) my + width * 0.075f else my)
     }
-    mouth.quadraticTo(center.x, center.y + h * 0.52f, left, my)
+    mouth.quadraticTo(center.x, center.y + h * 0.56f, left, my)
     mouth.close()
-    drawPath(mouth, halo, style = Stroke(width = width * 0.05f))
-    drawPath(mouth, lit)
+    lit(mouth, Offset(center.x, my + h * 0.1f))
 }
