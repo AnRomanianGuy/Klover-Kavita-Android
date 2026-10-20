@@ -109,6 +109,31 @@ class SeriesReaderStore(
     }
 
     suspend fun clear(seriesId: Int) = update(seriesId) { SeriesReaderPrefs() }
+
+    // series id -> encoded choices, for the signed-in account
+    suspend fun exportAll(): Map<String, String> {
+        val account = accounts.key.value ?: return emptyMap()
+        val prefix = "series_${account}_"
+        return store.data.first().asMap().entries
+            .filter { it.key.name.startsWith(prefix) && it.value is String }
+            .associate { it.key.name.removePrefix(prefix) to it.value as String }
+    }
+
+    // replaces the choices of the signed-in account with the ones from a backup
+    suspend fun importAll(entries: Map<String, String>): Int {
+        val account = accounts.key.value ?: return 0
+        val prefix = "series_${account}_"
+        var taken = 0
+        store.edit { stored ->
+            stored.asMap().keys.filter { it.name.startsWith(prefix) }.forEach { stored.remove(it) }
+            for ((id, value) in entries) {
+                if (id.toIntOrNull() == null || value.isBlank()) continue
+                stored[seriesKey(account, id.toInt())] = value
+                taken++
+            }
+        }
+        return taken
+    }
 }
 
 fun SeriesReaderStore(context: Context, accounts: AccountStorage, scope: CoroutineScope) =

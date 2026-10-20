@@ -177,6 +177,9 @@ This is the part I care about most, and it was designed on a foldable rather tha
 - Keep several accounts on the device (up to twelve) and switch from the profile picker without typing passwords
   again. Each profile has its own name, ring colour, shape and photo.
 - Stats, pace, history, bookmarks, streak and app settings are kept per account.
+- **Backup:** Settings -> Account -> Backup exports your streak, clovers, badges, reading stats, time-left learning,
+  bookmarks and settings to one file, and imports it again (on a new phone, or after a reinstall). It is restored into
+  the account you are signed in as. The file never holds your sign-in, and downloads are not included.
 
 ### Make it yours
 

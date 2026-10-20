@@ -6,6 +6,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,7 +33,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -118,6 +122,7 @@ import com.romanianguy.klover.ui.theme.hueSeed
 import com.romanianguy.klover.ui.theme.isAppDark
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+import java.time.LocalDate
 
 private val TabTitles = listOf(
     R.string.settings_appearance,
@@ -720,6 +725,14 @@ private fun BookPreview(settings: AppSettings) {
 private fun AccountTab(state: SettingsUiState, vm: SettingsViewModel) {
     var confirmSignOut by remember { mutableStateOf(false) }
     var confirmReset by remember { mutableStateOf(false) }
+    var confirmImport by remember { mutableStateOf(false) }
+    val backupResult by vm.backupResult.collectAsStateWithLifecycle()
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri != null) vm.exportTo(uri)
+    }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) vm.importFrom(uri)
+    }
 
     SettingsGroup(R.string.settings_account, Modifier.reveal(0)) {
         ProfileSettingsSection()
@@ -849,7 +862,24 @@ private fun AccountTab(state: SettingsUiState, vm: SettingsViewModel) {
         )
     }
 
-    SettingsGroup(R.string.settings_about, Modifier.reveal(3)) {
+    SettingsGroup(R.string.settings_backup, Modifier.reveal(3)) {
+        ListItem(
+            modifier = Modifier.clickable { exportLauncher.launch("klover-backup-${LocalDate.now()}.json") },
+            leadingContent = { Icon(Icons.Filled.Upload, contentDescription = null) },
+            headlineContent = { Text(stringResource(R.string.settings_backup_export)) },
+            supportingContent = { Text(stringResource(R.string.settings_backup_export_hint)) },
+            colors = rowColors(),
+        )
+        ListItem(
+            modifier = Modifier.clickable { confirmImport = true },
+            leadingContent = { Icon(Icons.Filled.Download, contentDescription = null) },
+            headlineContent = { Text(stringResource(R.string.settings_backup_import)) },
+            supportingContent = { Text(stringResource(R.string.settings_backup_import_hint)) },
+            colors = rowColors(),
+        )
+    }
+
+    SettingsGroup(R.string.settings_about, Modifier.reveal(4)) {
         ListItem(
             headlineContent = { Text(stringResource(R.string.app_name)) },
             supportingContent = { Text(stringResource(R.string.settings_version, BuildConfig.VERSION_NAME)) },
@@ -870,6 +900,26 @@ private fun AccountTab(state: SettingsUiState, vm: SettingsViewModel) {
                 TextButton(onClick = { confirmSignOut = false; vm.signOut() }) { Text(stringResource(R.string.settings_sign_out)) }
             },
             dismissButton = { TextButton(onClick = { confirmSignOut = false }) { Text(stringResource(R.string.action_cancel)) } },
+        )
+    }
+    if (confirmImport) {
+        AlertDialog(
+            onDismissRequest = { confirmImport = false },
+            title = { Text(stringResource(R.string.settings_backup_import_title)) },
+            text = { Text(stringResource(R.string.settings_backup_import_body)) },
+            confirmButton = {
+                TextButton(onClick = { confirmImport = false; importLauncher.launch(arrayOf("*/*")) }) {
+                    Text(stringResource(R.string.settings_backup_import_choose))
+                }
+            },
+            dismissButton = { TextButton(onClick = { confirmImport = false }) { Text(stringResource(R.string.action_cancel)) } },
+        )
+    }
+    backupResult?.let { message ->
+        AlertDialog(
+            onDismissRequest = vm::dismissBackupResult,
+            text = { Text(stringResource(message)) },
+            confirmButton = { TextButton(onClick = vm::dismissBackupResult) { Text(stringResource(R.string.backup_done)) } },
         )
     }
     if (confirmReset) {

@@ -1,5 +1,7 @@
 package com.romanianguy.klover.di
 
+import com.romanianguy.klover.BuildConfig
+import com.romanianguy.klover.data.backup.BackupManager
 import com.romanianguy.klover.data.chapters.InnerReadMarks
 import com.romanianguy.klover.data.downloads.DownloadFiles
 import com.romanianguy.klover.data.downloads.DownloadManager
@@ -149,6 +151,19 @@ val appModule = module {
     single { ReadingPace(get(), get()) }
     single { ReadingAccuracy(get(), get()) }
     single { InnerReadMarks(get(), get()) }
+    // Export and import of what belongs to the reader (stats, clovers, settings...), without the sign-in or downloads.
+    single {
+        BackupManager(
+            accounts = get<AccountStorage>(),
+            settings = get(),
+            series = get(),
+            appVersion = BuildConfig.VERSION_NAME,
+            ensure = listOf(
+                get<ReadingStats>(), get<LastReadStore>(), get<ReadingHistory>(), get<Bookmarks>(), get<BadgeWatcher>(),
+                get<ReadingPace>(), get<ReadingAccuracy>(), get<InnerReadMarks>(),
+            ),
+        )
+    }
     single { DownloadFiles(File(androidContext().filesDir, "downloads")) }
     single { DownloadStore(File(androidContext().filesDir, "downloads/index.json")) }
     single { DownloadManager(androidContext(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), ::sectionTextLength) }
@@ -162,5 +177,5 @@ val appModule = module {
     }
     viewModel { DownloadsViewModel(get(), get()) }
     viewModel { AboutViewModel(get(), get(), get()) }
-    viewModel { SettingsViewModel(get(), get(), get(), androidContext(), get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), androidContext(), get(), get()) }
 }

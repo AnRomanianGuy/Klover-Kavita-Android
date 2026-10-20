@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.KSerializer
 import java.io.File
 import java.security.MessageDigest
+import java.util.concurrent.CopyOnWriteArrayList
 
 // data per account (a user on a server) in its own folder, so accounts never share stats, pace or streaks
 interface AccountStorage {
@@ -23,6 +24,22 @@ interface AccountStorage {
     fun file(name: String, key: String): File
 
     fun legacy(name: String): File?
+
+    // the stores that exist, so a backup can read and restore them
+    val backupSources: List<BackupSource> get() = emptyList()
+
+    fun register(source: BackupSource) {}
+}
+
+interface BackupSource {
+    val name: String
+
+    fun exportJson(): String
+
+    // whether [text] could be restored; nothing is changed
+    fun accepts(text: String): Boolean
+
+    fun importJson(text: String)
 }
 
 fun accountKey(session: Session): String {
@@ -40,6 +57,14 @@ class AccountFiles(private val root: File, sessions: SessionManager, scope: Coro
             SharingStarted.Eagerly,
             (sessions.state.value as? SessionState.SignedIn)?.session?.let(::accountKey),
         )
+
+    private val sources = CopyOnWriteArrayList<BackupSource>()
+
+    override val backupSources: List<BackupSource> get() = sources
+
+    override fun register(source: BackupSource) {
+        sources.add(source)
+    }
 
     override fun file(name: String, key: String) = File(File(root, key), name)
 
@@ -59,11 +84,11 @@ class SingleFile(private val file: File) : AccountStorage {
 @OptIn(FlowPreview::class)
 class AccountStore<T>(
     private val storage: AccountStorage,
-    private val name: String,
+    override val name: String,
     private val serializer: KSerializer<T>,
     private val empty: T,
     scope: CoroutineScope,
-) {
+) : BackupSource {
     private class Holder<T>(val key: String?, val value: T)
 
     private val lock = Any()
@@ -76,6 +101,16 @@ class AccountStore<T>(
         switchTo(storage.key.value)
         scope.launch { storage.key.drop(1).collect { switchTo(it) } }
         scope.launch { holder.drop(1).debounce(1_500).collect { runCatching { save(it) } } }
+        storage.register(this)
+    }
+
+    override fun exportJson(): String = KavitaJson.encodeToString(serializer, _data.value)
+
+    override fun accepts(text: String) = runCatching { KavitaJson.decodeFromString(serializer, text) }.isSuccess
+
+    override fun importJson(text: String) {
+        set(KavitaJson.decodeFromString(serializer, text))
+        flush()
     }
 
     fun update(block: (T) -> T) {

@@ -79,6 +79,22 @@
     <string name="settings_storage">Storage</string>
     <string name="settings_storage_cache">Image cache</string>
     <string name="settings_storage_clear">Clear cache</string>
+    <string name="settings_backup">Backup</string>
+    <string name="settings_backup_export">Export my data</string>
+    <string name="settings_backup_export_hint">Streak, clovers, badges, reading stats, time-left learning, bookmarks and settings, saved to one file. Your sign-in and downloads are not included.</string>
+    <string name="settings_backup_import">Import my data</string>
+    <string name="settings_backup_import_hint">Restore an export. It is put into the account you are signed in as.</string>
+    <string name="settings_backup_import_title">Import a backup?</string>
+    <string name="settings_backup_import_body">This replaces the streak, clovers, stats, time-left learning, bookmarks and settings of this account with the ones in the file. It cannot be undone.</string>
+    <string name="settings_backup_import_choose">Choose file</string>
+    <string name="backup_exported">Your data was saved to the file.</string>
+    <string name="backup_imported">Your data was restored.</string>
+    <string name="backup_write_failed">The file could not be written.</string>
+    <string name="backup_read_failed">The file could not be read, nothing was changed.</string>
+    <string name="backup_not_a_backup">This is not a Klover backup.</string>
+    <string name="backup_too_new">This backup comes from a newer version of Klover. Update the app first.</string>
+    <string name="backup_signed_out">Sign in first: the data is saved from and restored into the signed-in account.</string>
+    <string name="backup_done">Done</string>
 
     <!-- Appearance -->
     <string name="settings_accent">Accent colour</string>

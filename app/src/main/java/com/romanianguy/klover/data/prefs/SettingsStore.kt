@@ -12,6 +12,9 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.romanianguy.klover.data.backup.PrefEntry
+import com.romanianguy.klover.data.backup.putEntries
+import com.romanianguy.klover.data.backup.toEntries
 import com.romanianguy.klover.data.repo.LibrarySort
 import com.romanianguy.klover.data.session.AccountStorage
 import kotlinx.coroutines.CoroutineScope
@@ -344,6 +347,7 @@ class SettingsStore(
     private companion object {
         const val PREFIX = "profile_settings_"
         const val SUFFIX = ".preferences_pb"
+        val DEVICE_LEVEL = setOf(PrefKeys.LAST_SERVER.name, PrefKeys.INCOGNITO.name)
     }
 
     private suspend fun storeFor(key: String): DataStore<Preferences> = lock.withLock { openLocked(key) }
@@ -395,6 +399,21 @@ class SettingsStore(
     }
 
     suspend fun <E : Enum<E>> setEnum(key: Preferences.Key<String>, value: E) = set(key, value.name)
+
+    // what a backup carries: the settings of this profile, without the device level ones
+    suspend fun exportPrefs(): Map<String, PrefEntry> = currentStore().data.first().asMap().toEntries(DEVICE_LEVEL)
+
+    // replaces the settings with the ones from a backup, keeping the remembered server and incognito as they are here
+    suspend fun importPrefs(entries: Map<String, PrefEntry>): Int {
+        var taken = 0
+        currentStore().edit { prefs ->
+            val incognito = prefs[PrefKeys.INCOGNITO]
+            prefs.clear()
+            taken = prefs.putEntries(entries, DEVICE_LEVEL)
+            if (incognito != null) prefs[PrefKeys.INCOGNITO] = incognito
+        }
+        return taken
+    }
 
     // resets everything except the remembered server and incognito
     suspend fun resetAll() {
