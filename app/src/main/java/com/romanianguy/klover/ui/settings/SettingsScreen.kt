@@ -649,6 +649,12 @@ private fun ReaderTab(settings: AppSettings, vm: SettingsViewModel) {
             onChange = { vm.set(PrefKeys.BOOK_HYPHENATE, it) },
         )
         SwitchSetting(
+            R.string.book_styles,
+            hint = R.string.book_styles_hint,
+            checked = settings.bookStyles,
+            onChange = { vm.set(PrefKeys.BOOK_STYLES, it) },
+        )
+        SwitchSetting(
             R.string.book_indent,
             checked = settings.bookIndent,
             onChange = { vm.set(PrefKeys.BOOK_INDENT, it) },

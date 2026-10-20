@@ -8,6 +8,7 @@ import coil3.SingletonImageLoader
 import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
+import coil3.svg.SvgDecoder
 import com.romanianguy.klover.data.downloads.DownloadManager
 import com.romanianguy.klover.data.garden.BadgeWatcher
 import com.romanianguy.klover.data.history.ContinueShortcut
@@ -85,7 +86,10 @@ class KloverApp : Application(), SingletonImageLoader.Factory {
     override fun newImageLoader(context: PlatformContext): ImageLoader {
         val client = get<OkHttpClient>()
         return ImageLoader.Builder(context)
-            .components { add(OkHttpNetworkFetcherFactory(callFactory = { client })) }
+            .components {
+                add(OkHttpNetworkFetcherFactory(callFactory = { client }))
+                add(SvgDecoder.Factory())
+            }
             .memoryCache { MemoryCache.Builder().maxSizePercent(context, 0.25).build() }
             .crossfade(true)
             .build()

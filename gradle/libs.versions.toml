@@ -66,6 +66,8 @@ retrofit-kotlinx-serialization = { group = "com.squareup.retrofit2", name = "con
 material-components = { group = "com.google.android.material", name = "material", version.ref = "materialComponents" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
+# Draws the SVG pictures of a book.
+coil-svg = { group = "io.coil-kt.coil3", name = "coil-svg", version.ref = "coil" }
 # Reads the HTML of an EPUB section for the native book reader.
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 koin-bom = { group = "io.insert-koin", name = "koin-bom", version.ref = "koin" }

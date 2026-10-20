@@ -472,7 +472,7 @@ private fun BookScreen(
         }
         for (p in pieces) {
             if (p !is ImagePiece) continue
-            val source = remember(p) { images.model(p.image.src) } ?: continue
+            val source = remember(p) { p.image.svg?.encodeToByteArray() ?: images.model(p.image.src) } ?: continue
             AsyncImage(
                 model = source,
                 contentDescription = p.image.alt.ifBlank { null },

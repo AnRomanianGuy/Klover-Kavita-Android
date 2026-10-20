@@ -1,6 +1,7 @@
 package com.romanianguy.klover.ui.reader.book
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
@@ -117,7 +118,24 @@ private class Laid(
     val before: Float,
     val after: Float,
     val keepWithNext: Boolean,
+    val rightPx: Float = 0f,
+    val table: TableLaid? = null,
 )
+
+private class CellLaid(val block: TextBlock, val layout: TextLayoutResult, val x: Float, val w: Float)
+
+private class RowLaid(val cells: List<CellLaid>, val height: Float)
+
+private class TableLaid(val rows: List<RowLaid>, val width: Float, val padX: Float, val padY: Float)
+
+// the book's colour is used only when it can be read on the page
+private const val MIN_CONTRAST = 3f
+
+private fun contrast(a: Color, b: Color): Float {
+    val la = a.luminance() + 0.05f
+    val lb = b.luminance() + 0.05f
+    return if (la > lb) la / lb else lb / la
+}
 
 private fun TextBlock.annotated(style: BookStyle, baseSp: Float): AnnotatedString = buildAnnotatedString {
     append(text)
@@ -130,12 +148,14 @@ private fun TextBlock.annotated(style: BookStyle, baseSp: Float): AnnotatedStrin
             f.strike -> TextDecoration.LineThrough
             else -> null
         }
+        val own = f.color?.takeIf { style.bookStyles && contrast(it, style.background) >= MIN_CONTRAST }
         val span = SpanStyle(
-            color = if (f.link != null) style.link else Color.Unspecified,
+            color = if (f.link != null) style.link else own ?: Color.Unspecified,
             fontWeight = if (f.bold) FontWeight.Bold else null,
             fontStyle = if (f.italic) FontStyle.Italic else null,
             fontFamily = if (f.mono) FontFamily.Monospace else null,
             fontSize = if (f.sizeRel != 1f) (baseSp * scale * f.sizeRel).sp else TextUnit.Unspecified,
+            letterSpacing = if (style.bookStyles && f.spacing != 0f) (f.spacing * baseSp * scale).sp else TextUnit.Unspecified,
             baselineShift = when (f.baseline) {
                 1 -> BaselineShift.Superscript
                 -1 -> BaselineShift.Subscript
@@ -160,8 +180,10 @@ private fun TextBlock.textStyle(style: BookStyle, baseSp: Float): TextStyle {
         style.justify -> TextAlign.Justify
         else -> TextAlign.Start
     }
+    val first = box.firstEm
     val indent = when {
         hang > 0f -> TextIndent(0.sp, (hang * size).sp)
+        style.bookStyles && first != null && kind == Kind.Para -> TextIndent((first.coerceAtLeast(0f) * baseSp).sp, 0.sp)
         style.indent && kind == Kind.Para -> TextIndent((1.5f * size).sp, 0.sp)
         else -> TextIndent.None
     }
@@ -181,7 +203,8 @@ private fun TextBlock.textStyle(style: BookStyle, baseSp: Float): TextStyle {
 
 // columns the size of the style inside the view; one screen is exactly one view width and the gap is twice the
 // padding.
-// paragraphs split line by line (two lines minimum per side), headings stay with their text, pictures aren't split
+// paragraphs split line by line (two lines minimum per side), headings stay with their text, pictures and table rows
+// aren't split
 internal fun layoutBook(
     model: BookModel,
     style: BookStyle,
@@ -204,8 +227,85 @@ internal fun layoutBook(
     val baseSp = style.fontSizeDp.toFloat()
     val em = with(density) { baseSp.sp.toPx() }
     val paraGap = (style.paragraphGap ?: DEFAULT_PARAGRAPH_GAP) * em
+    // with the spacing set to "Book", the book's own margins are followed
+    val bookSpacing = style.bookStyles && style.paragraphGap == null
 
     val measurer = TextMeasurer(resolver, density, direction, 0)
+
+    fun measure(block: TextBlock, text: TextStyle, width: Float, style: BookStyle) = measurer.measure(
+        text = block.annotated(style, baseSp),
+        style = text,
+        // the whole width, so centred and right aligned lines have room to move in
+        constraints = width.toInt().coerceAtLeast(1).let { Constraints(minWidth = it, maxWidth = it) },
+        layoutDirection = direction,
+        density = density,
+        fontFamilyResolver = resolver,
+        skipCache = true,
+    )
+
+    // a table: the columns share the width by how wide their text wants to be, every cell is one block of text
+    fun table(t: TableBlock): TableLaid {
+        val padX = 0.6f * em
+        val padY = 0.35f * em
+        val plain = style.copy(justify = false, indent = false, bookStyles = false)
+        val columns = t.rows.maxOf { row -> row.sumOf { it.span } }.coerceAtLeast(1)
+        val wanted = FloatArray(columns) { 2 * padX + em }
+        // the least a column can be without breaking a word
+        val least = FloatArray(columns) { 2 * padX + em }
+        for (row in t.rows) {
+            var c = 0
+            for (cell in row) {
+                val b = cell.block
+                if (b != null && cell.span == 1) {
+                    val natural = measurer.measure(
+                        text = b.annotated(plain, baseSp),
+                        style = b.textStyle(plain, baseSp),
+                        constraints = Constraints(),
+                        layoutDirection = direction,
+                        density = density,
+                        fontFamilyResolver = resolver,
+                        skipCache = true,
+                    ).size.width
+                    wanted[c] = max(wanted[c], natural + 2 * padX)
+                    val word = b.text.split(Regex("\\s+")).maxByOrNull { it.length }.orEmpty()
+                    if (word.isNotEmpty()) {
+                        val w = measurer.measure(AnnotatedString(word), b.textStyle(plain, baseSp), constraints = Constraints()).size.width
+                        least[c] = max(least[c], w * 1.1f + 2 * padX)
+                    }
+                }
+                c += cell.span
+            }
+        }
+        for (i in wanted.indices) wanted[i] = max(wanted[i], least[i])
+        val total = wanted.sum()
+        val leastSum = least.sum()
+        val widths = FloatArray(columns) {
+            when {
+                total <= colW && total >= colW * 0.5f -> colW * wanted[it] / total
+                total <= colW -> wanted[it]
+                // too wide: every column keeps its longest word, the rest of the width goes to the columns that want more
+                leastSum >= colW -> colW * least[it] / leastSum
+                else -> least[it] + (colW - leastSum) * (wanted[it] - least[it]) / (total - leastSum)
+            }
+        }
+        val rows = t.rows.map { row ->
+            var c = 0
+            var x = 0f
+            val cells = ArrayList<CellLaid>()
+            for (cell in row) {
+                val w = (c until min(columns, c + cell.span)).sumOf { widths[it].toDouble() }.toFloat()
+                cell.block?.let { b ->
+                    checkActive()
+                    val layout = measure(b, b.textStyle(plain, baseSp), w - 2 * padX, plain)
+                    cells += CellLaid(b, layout, x, w)
+                }
+                x += w
+                c += cell.span
+            }
+            RowLaid(cells, (cells.maxOfOrNull { it.layout.size.height } ?: 0).toFloat() + 2 * padY)
+        }
+        return TableLaid(rows, widths.sum(), padX, padY)
+    }
 
     // 1. Measure every block at the width it will have.
     val laid = ArrayList<Laid>(model.blocks.size)
@@ -214,27 +314,25 @@ internal fun layoutBook(
         laid += when (block) {
             is TextBlock -> {
                 val size = em * block.scale
-                val indent = block.indent * 1.4f * em
-                val width = (colW - indent).coerceAtLeast(48f)
-                val layout = measurer.measure(
-                    text = block.annotated(style, baseSp),
-                    style = block.textStyle(style, baseSp),
-                    constraints = Constraints(maxWidth = width.toInt()),
-                    layoutDirection = direction,
-                    density = density,
-                    fontFamilyResolver = resolver,
-                    skipCache = true,
-                )
-                val (before, after) = when (block.kind) {
+                val book = style.bookStyles
+                val indent = ((if (book) block.box.indent else block.indent) * 1.4f + (if (book) block.box.leftEm else 0f)) * em
+                val right = if (book) block.box.rightEm * em else 0f
+                val width = (colW - indent - right).coerceAtLeast(48f)
+                val layout = measure(block, block.textStyle(style, baseSp), width, style)
+                var (before, after) = when (block.kind) {
                     Kind.Heading -> (1.0f * size) to (0.45f * size)
                     Kind.ListItem -> 0f to (0.25f * em)
                     else -> 0f to paraGap
                 }
-                Laid(block, layout, indent, 0f, 0f, before, after, block.kind == Kind.Heading)
+                if (bookSpacing && block.kind != Kind.Pre) {
+                    block.box.beforeEm?.let { before = it * em }
+                    block.box.afterEm?.let { after = it * em }
+                }
+                Laid(block, layout, indent, 0f, 0f, before, after, block.kind == Kind.Heading, right)
             }
 
             is ImageBlock -> {
-                val natural = imageSizes[block.src]
+                val natural = block.natural ?: imageSizes[block.src]
                 var w: Float
                 var h: Float
                 if (natural != null && natural.width > 0 && natural.height > 0) {
@@ -246,13 +344,28 @@ internal fun layoutBook(
                     w = colW
                     h = colW * 0.75f
                 }
+                val wantedW = block.widthShare?.let { colW * it } ?: block.widthDp?.let { it * dp }
+                if (wantedW != null) {
+                    h = if (block.heightDp != null && block.widthShare == null) block.heightDp * dp else h * wantedW / w
+                    w = wantedW
+                } else if (block.heightDp != null) {
+                    w = w * block.heightDp * dp / h
+                    h = block.heightDp * dp
+                }
                 val scale = min(1f, min(colW / w, colH / h))
                 w *= scale
                 h *= scale
                 Laid(block, null, 0f, w, h, 0.3f * em, 0.6f * em, false)
             }
 
+            is TableBlock -> {
+                val laidTable = table(block)
+                Laid(block, null, 0f, laidTable.width, 0f, 0.4f * em, paraGap, false, table = laidTable)
+            }
+
             RuleBlock -> Laid(block, null, 0f, colW, 1f, 0.8f * em, 0.8f * em, false)
+
+            BreakBlock -> Laid(block, null, 0f, 0f, 0f, 0f, 0f, false)
         }
     }
 
@@ -278,6 +391,43 @@ internal fun layoutBook(
 
     for ((index, item) in laid.withIndex()) {
         checkActive()
+        if (item.block === BreakBlock) {
+            // the next block starts a new screen
+            if (current.isNotEmpty()) nextColumn()
+            if (columns.isNotEmpty()) while (columns.size % n != 0) columns += emptyList<Piece>()
+            previousAfter = 0f
+            continue
+        }
+        val table = item.table
+        if (table != null) {
+            var first = true
+            for (row in table.rows) {
+                val spacing = if (current.isEmpty()) 0f else if (first) max(previousAfter, item.before) else 0f
+                if (y + spacing + row.height > colH && current.isNotEmpty()) nextColumn()
+                val at = if (current.isEmpty()) 0f else y + (if (first) max(previousAfter, item.before) else 0f)
+                val x = if (table.width < colW) 0f else 0f
+                if (first || current.isEmpty()) current += RulePiece(x, at, table.width)
+                for (cell in row.cells) {
+                    val lines = cell.layout.lineCount
+                    current += TextPiece(
+                        block = cell.block,
+                        layout = cell.layout,
+                        x = x + cell.x + table.padX,
+                        y = at + table.padY,
+                        w = cell.w - 2 * table.padX,
+                        h = cell.layout.size.height.toFloat(),
+                        top = 0f,
+                        charFrom = 0,
+                        charTo = cell.layout.getLineEnd(lines - 1),
+                    )
+                }
+                current += RulePiece(x, at + row.height, table.width)
+                y = at + row.height
+                first = false
+            }
+            previousAfter = item.after
+            continue
+        }
         val layout = item.layout
         if (layout == null) {
             val spacing = if (current.isEmpty()) 0f else max(previousAfter, item.before)
@@ -329,7 +479,7 @@ internal fun layoutBook(
                 layout = layout,
                 x = item.indentPx,
                 y = at,
-                w = colW - item.indentPx,
+                w = colW - item.indentPx - item.rightPx,
                 h = height,
                 top = firstTop,
                 charFrom = layout.getLineStart(line),

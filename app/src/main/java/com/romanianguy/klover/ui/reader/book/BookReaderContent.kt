@@ -229,6 +229,7 @@ internal fun BookReaderContent(
         prefs.bookParagraphs,
         prefs.bookIndent,
         prefs.bookHyphenate,
+        prefs.bookStyles,
         palette,
         bars,
     ) {
@@ -250,6 +251,7 @@ internal fun BookReaderContent(
             paragraphGap = prefs.bookParagraphs.em,
             indent = prefs.bookIndent,
             hyphenate = prefs.bookHyphenate,
+            bookStyles = prefs.bookStyles,
         )
     }
     // parsing is slow on long sections, so off the main thread

@@ -151,6 +151,7 @@ data class AppSettings(
     val bookParagraphs: ParagraphSpacing = ParagraphSpacing.Book,
     val bookIndent: Boolean = false,
     val bookHyphenate: Boolean = true,
+    val bookStyles: Boolean = true,
 
     val downloadWifiOnly: Boolean = true,
     val downloadParallel: Int = 2,
@@ -228,6 +229,7 @@ object PrefKeys {
     val BOOK_PARAGRAPHS = stringPreferencesKey("book_paragraphs")
     val BOOK_INDENT = booleanPreferencesKey("book_indent")
     val BOOK_HYPHENATE = booleanPreferencesKey("book_hyphenate")
+    val BOOK_STYLES = booleanPreferencesKey("book_styles")
 
     val FONT_SCALE = floatPreferencesKey("book_font_scale")
     val BOOK_FONT = stringPreferencesKey("book_font")
@@ -314,6 +316,7 @@ internal fun Preferences.toAppSettings(): AppSettings {
         bookParagraphs = enumOf(PrefKeys.BOOK_PARAGRAPHS, defaults.bookParagraphs),
         bookIndent = this[PrefKeys.BOOK_INDENT] ?: defaults.bookIndent,
         bookHyphenate = this[PrefKeys.BOOK_HYPHENATE] ?: defaults.bookHyphenate,
+        bookStyles = this[PrefKeys.BOOK_STYLES] ?: defaults.bookStyles,
 
         downloadWifiOnly = this[PrefKeys.DOWNLOAD_WIFI_ONLY] ?: defaults.downloadWifiOnly,
         downloadParallel = (this[PrefKeys.DOWNLOAD_PARALLEL] ?: defaults.downloadParallel).coerceIn(1, 3),

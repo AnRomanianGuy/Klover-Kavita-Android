@@ -124,9 +124,15 @@ The code is kept plain on purpose, with few comments. Parts of it were written w
 - **EPUB** is drawn by the app itself, not a WebView: paged columns, text size, line spacing, margins, justified text,
   hyphenation, paragraph spacing and first-line indent, serif, sans or mono, and page colours (App, Paper, Sepia, Dark,
   Black). Table of contents and in-book links work.
+- **The book's own styling** is followed (there is a switch to turn it off): CSS selectors, margins and indents, text
+  alignment, colours that stay readable on your page colour, letter spacing, capitals and small capitals, list
+  markers, poems that keep their line breaks, and page breaks. Tables are laid out as tables, with their rows, header
+  and column spans. SVG pictures work: inline SVG, SVG files and covers wrapped in an SVG. Pictures keep the size
+  the book asks for.
 - **Read aloud** for EPUB with the system voice: the current sentence is highlighted, the page follows the voice, and
   you can set speed and a sleep timer.
-- **PDF** through Android's own renderer.
+- **PDF** through Android's own renderer. Zooming in renders the part you are looking at again at screen resolution,
+  so text stays sharp.
 - **Page turn styles:** slide, fade, instant, or a **book flip**.
 - **Bookmarks with notes** and a **history** of finished chapters.
 - Reading progress goes back to Kavita as you read. Marks you make while the server is away are kept on the device and
@@ -269,10 +275,10 @@ Next, roughly in this order. These are ideas, not promises, and there are no dat
 
 - [x] **First release: a downloadable APK on GitHub Releases** (v1.0, early)
 - [x] Publish the source code
-- [ ] Sharper PDF zoom (re-render the visible part at a higher resolution)
+- [x] Sharper PDF zoom (the visible part is rendered again at screen resolution)
 - [ ] More languages (the UI is English only today)
 - [ ] Bookmarks in the EPUB reader (comics have them already)
-- [ ] EPUB tables and SVG images
+- [x] EPUB tables, SVG images and more of the book's CSS
 - [ ] Chapter thumbnails in the volume sheet
 - [ ] Downloads and reader settings per account (stats already are)
 - [ ] Retry for reading progress that could not be sent because the connection dropped as a chapter closed
@@ -286,9 +292,11 @@ If something here matters to you, say so in an issue. That is how I decide what 
 
 I would rather you hear it from me:
 
-- **PDF zoom gets soft.** Pages are rendered at a fixed width, so zooming in a lot on a PDF looks blurry.
-- **EPUB limits.** The reader uses its own layout, not a browser. Book CSS only changes the basics (italic, bold, small
-  print, centring, hidden bits), tables are flattened to paragraphs, and SVG pictures are not drawn.
+- **EPUB limits.** The reader uses its own layout, not a browser. It follows a good part of the book's CSS, but not all of
+  it: no floating pictures or drop caps, no embedded fonts, no pictures inside a line of text, no row spans in tables,
+  and `::before` / `::after` content is ignored. A letter-spacing request is dropped in justified paragraphs.
+- **A PDF's sharper picture takes a moment.** When you zoom, the page first shows the soft picture and swaps in the
+  sharp one a split second after you stop.
 - **Most testing was on an emulator.** The foldable features (book flip, spine, tabletop, posture changes) were built and
   checked on the Pixel Fold emulator. Speed was measured on a Pixel 8a. They have not been through a lot of real foldable
   hardware yet.

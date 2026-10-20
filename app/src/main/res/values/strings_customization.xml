@@ -21,6 +21,8 @@
     <string name="paragraphs_wide">Wide</string>
     <string name="book_indent">Indent first lines</string>
     <string name="book_hyphenate">Hyphenate words</string>
+    <string name="book_styles">Use the book\'s own styling</string>
+    <string name="book_styles_hint">Follow the book\'s margins, indents, colours, tables and page breaks. Off shows plain text.</string>
 
     <!-- Look -->
     <string name="settings_look">Look</string>

@@ -99,6 +99,7 @@ dependencies {
     implementation(libs.material.components)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.coil.svg)
     implementation(libs.jsoup)
     implementation(libs.koin.android)
     implementation(libs.koin.compose)

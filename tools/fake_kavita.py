@@ -48,6 +48,116 @@ SERIES.append({"id": WEBTOON, "name": "Tower of Dawn (Webtoon)", "originalName":
                "sortName": "Tower of Dawn", "pages": 12, "pagesRead": 0, "format": 1, "libraryId": 2, "libraryName": "Comics", "userRating": 0})
 SERIES_BY_ID = {x["id"]: x for x in SERIES}
 
+# ---- a book made to exercise the EPUB reader: CSS, SVG, tables, lists, page breaks (series STYLE_TEST) ----
+STYLE_TEST = 34
+SERIES.append({"id": STYLE_TEST, "name": "Style Test (EPUB)", "originalName": "Style Test", "localizedName": "Style Test",
+               "sortName": "Style Test", "pages": 6, "pagesRead": 0, "format": 3, "libraryId": 3, "libraryName": "Books", "userRating": 0})
+SERIES_BY_ID[STYLE_TEST] = SERIES[-1]
+
+STYLE_TITLES = ["Selectors and spacing", "Pictures and SVG", "Tables", "Lists and breaks", "Poems and ruby", "Odds and ends"]
+
+SAMPLE_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="140" viewBox="0 0 240 140">'
+    '<rect width="240" height="140" rx="14" fill="#1e5a46"/><circle cx="70" cy="70" r="40" fill="#f2d16b"/>'
+    '<path d="M120 110 L160 40 L200 110 Z" fill="#8fc48f"/><text x="120" y="132" font-size="14" fill="#fff" text-anchor="middle">logo.svg</text></svg>'
+)
+
+WORDS = ("The field was quiet and the light came in low across the furrows, so that every clod threw a long soft shadow. "
+         "Nobody had walked there since the thaw, and the roots went on with their slow arithmetic underground. ")
+
+
+def style_test_html(cid, page, host):
+    base = f"//{host}/api/book/{cid}/book-resources?apiKey={API_KEY}&file="
+    if page == 0:
+        return (
+            "<style>"
+            ".reading-section p{margin:0;text-indent:1.5em;text-align:justify} .reading-section p.first{text-indent:0}"
+            " .reading-section h1{text-align:center;font-size:1.8em;margin:.6em 0 .6em;text-indent:0}"
+            " .reading-section blockquote{margin:1em 2em;font-style:italic}"
+            " .reading-section blockquote p{text-indent:0}"
+            " .reading-section .note{margin-left:2.5em;font-size:.9em;text-indent:0}"
+            " .reading-section .chapter > p + p.tight{margin-top:0}"
+            " .reading-section span.red{color:#b00020} .reading-section span.pale{color:#202020}"
+            " .reading-section .upper{text-transform:uppercase} .reading-section .spaced{letter-spacing:.25em}"
+            " .reading-section #special{font-weight:bold} .reading-section p[lang='fr']{font-style:italic}"
+            " .reading-section .strike{text-decoration:line-through} .reading-section .right{text-align:right;text-indent:0}"
+            " .reading-section .gap{margin-top:1.5em}"
+            " @media print{.reading-section p{display:none}} @media screen{.reading-section .screen-only{font-weight:bold}}"
+            " .reading-section .never::before{content:'x'}"
+            "</style>"
+            '<div class="chapter"><h1>Selectors and spacing</h1>'
+            f'<p class="first">{WORDS}</p><p>{WORDS}</p>'
+            '<blockquote><p>A blockquote with a left and right margin, set in italics by the book.</p></blockquote>'
+            '<p class="note">A note with a left margin and a smaller size, so it sits apart from the text above it.</p>'
+            f'<p class="gap">A paragraph with extra space above it. {WORDS}</p>'
+            '<p id="special">Selected by id: this paragraph is bold.</p>'
+            '<p lang="fr">Selected by an attribute: this one is in italics, like a foreign phrase.</p>'
+            '<p>Colour with <span class="red">a dark red word</span> and one that is <span class="pale">almost black</span>, '
+            'then <span class="upper">upper case by CSS</span>, <span class="spaced">spaced letters</span> and <span class="strike">struck out</span>.</p>'
+            '<p class="screen-only">Inside an @media screen block: bold.</p><p class="right">Right aligned <span class="spaced">and spaced</span> by a class.</p>'
+            '<p class="never">A paragraph whose ::before rule must not break anything.</p></div>'
+        )
+    if page == 1:
+        return (
+            "<style>.reading-section img.small{width:30%} .reading-section p.img{text-align:center;text-indent:0}</style>"
+            '<div class="chapter"><h1>Pictures and SVG</h1><p>An inline SVG made of shapes and text:</p>'
+            '<p class="img"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120">'
+            '<rect width="200" height="120" rx="12" fill="#3a2f6b"/><circle cx="60" cy="60" r="34" fill="#f2b84b"/>'
+            '<polygon points="110,95 150,25 190,95" fill="#7fd0b0"/><text x="100" y="112" font-size="12" fill="#fff" text-anchor="middle">inline svg</text></svg></p>'
+            '<p>A raster picture wrapped in an SVG, the way cover pages are made:</p>'
+            f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet">'
+            f'<image width="900" height="520" xlink:href="{base}fig1.png"/></svg>'
+            f'<p>An SVG file used as a normal image:</p><p class="img"><img src="{base}logo.svg" alt="logo"></p>'
+            f'<p>The same picture at thirty percent of the width, set by CSS:</p><p class="img"><img class="small" src="{base}fig2.png" alt="small figure"></p>'
+            f'<p>And a picture with a width attribute:</p><p class="img"><img src="{base}fig3.png" width="120" alt="narrow figure"></p></div>'
+        )
+    if page == 2:
+        return (
+            "<style>.reading-section table{border-collapse:collapse} .reading-section th{text-align:left}"
+            " .reading-section td.num{text-align:right} .reading-section caption{font-style:italic}</style>"
+            '<div class="chapter"><h1>Tables</h1><p>A small table with a header row:</p>'
+            '<table><caption>Yield by field</caption><thead><tr><th>Field</th><th>Crop</th><th class="num">Tonnes</th></tr></thead>'
+            '<tbody><tr><td>North</td><td>Clover</td><td class="num">12.5</td></tr>'
+            '<tr><td>South</td><td>Barley, which has a longer name that wraps</td><td class="num">8.0</td></tr>'
+            '<tr><td>East</td><td>Fallow</td><td class="num">0</td></tr>'
+            '<tr><td colspan="2"><b>Total</b></td><td class="num"><b>20.5</b></td></tr></tbody></table>'
+            f'<p>The text goes on after the table. {WORDS}</p>'
+            '<table><tr><td>One</td><td>Two</td><td>Three</td><td>Four</td></tr><tr><td>Five</td><td>Six</td><td>Seven</td><td>Eight</td></tr></table>'
+            '<p>The end of the tables.</p></div>'
+        )
+    if page == 3:
+        return (
+            "<style>.reading-section ul.sq{list-style-type:square} .reading-section ol.alpha{list-style-type:lower-alpha}"
+            " .reading-section ol.roman{list-style-type:upper-roman} .reading-section ul.none{list-style-type:none}"
+            " .reading-section h2{page-break-before:always;text-align:center}</style>"
+            '<div class="chapter"><h1>Lists and breaks</h1><ul class="sq"><li>Square markers</li><li>Another item</li></ul>'
+            '<ol class="alpha"><li>Lower alpha</li><li>Second</li><li>Third</li></ol><ol class="roman"><li>Roman</li><li>Numerals</li></ol>'
+            '<ul class="none"><li>No marker at all</li><li>Not even one</li></ul>'
+            '<ul><li>Nested<ul><li>Inner one</li><li>Inner two</li></ul></li><li>Back out</li></ul>'
+            f'<h2>This heading starts on a new page</h2><p>{WORDS}</p>'
+            '<p style="page-break-before:always">And this paragraph asks for a new page too.</p></div>'
+        )
+    if page == 4:
+        return (
+            "<style>.reading-section .poem{white-space:pre-line;margin:1em 2em;text-indent:0} .reading-section .verse p{margin:0;text-indent:0}</style>"
+            '<div class="chapter"><h1>Poems and ruby</h1>'
+            '<p class="poem">The roots go down\nthe leaves go up\nand in between\nthe patient seasons turn.</p>'
+            '<div class="verse"><p>Line one of a verse</p><p>Line two, a little shorter</p><p>Line three</p></div>'
+            '<p>Ruby text: <ruby>漢字<rp>(</rp><rt>かんじ</rt><rp>)</rp></ruby> should read as the base text only.</p>'
+            '<pre>preformatted   text\n  keeps its   spaces</pre></div>'
+        )
+    return (
+        "<style>.reading-section .sc{font-variant:small-caps} .reading-section .cap1{text-transform:capitalize}"
+        " .reading-section .big{font-size:150%} .reading-section .box{margin:1em 0;padding:.5em;border:1px solid #888}"
+        " .reading-section hr.dash{border:0;border-top:1px dashed #888}</style>"
+        '<div class="chapter"><h1>Odds and ends</h1><p class="sc">Small capitals by CSS, where the font has them.</p>'
+        '<p class="cap1">capitalised by css text-transform</p><p class="big">Bigger by a percentage.</p>'
+        '<div class="box"><p>A boxed paragraph.</p></div><hr class="dash"><p>After the rule. Footnote<sup>1</sup> and H<sub>2</sub>O.</p>'
+        '<p><a href="https://example.com/">An external link</a> and <a href="#local">an internal one</a>.</p>'
+        '<p><abbr title="Extensible">XML</abbr> &amp; <q>a short quotation</q> with a <mark>mark</mark> and <del>deleted</del> text.</p></div>'
+    )
+
+
 # Metadata the filters and the global search work on, derived from the series id so it is stable.
 GENRES = [(1, "Slice of Life"), (2, "Drama"), (3, "Fantasy"), (4, "Mystery"), (5, "Sci-Fi"), (6, "Comedy")]
 TAGS = [(1, "Cozy"), (2, "Farming"), (3, "Found Family"), (4, "Winter")]
@@ -583,11 +693,18 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(200, pdf_bytes(g("chapterId")), "application/pdf")
         m = re.fullmatch(r"/api/Book/(\d+)/book-page", p)
         if m:
+            host = self.headers.get("Host", "10.0.2.2:5055")
+            if decode_chapter(int(m.group(1)))[0] == STYLE_TEST:
+                return self.send(200, style_test_html(int(m.group(1)), int(g("page")), host), "text/plain; charset=utf-8")
             return self.send(200, book_html(int(m.group(1)), g("page"), self.headers.get("Host", "10.0.2.2:5055")), "text/plain; charset=utf-8")
         m = re.fullmatch(r"/api/Book/(\d+)/chapters", p)
+        if m and decode_chapter(int(m.group(1)))[0] == STYLE_TEST:
+            return self.send(200, [{"title": t, "part": "", "page": i, "children": []} for i, t in enumerate(STYLE_TITLES)])
         if m:
             return self.send(200, [{"title": book_section_title(i), "part": "", "page": i, "children": []} for i in range(6)])
         m = re.fullmatch(r"/api/book/(\d+)/book-resources", p, re.I)
+        if m and q.get("file", [""])[0].endswith(".svg"):
+            return self.send(200, SAMPLE_SVG, "image/svg+xml")
         if m:
             return self.send(200, cover_png(figure_seed(int(m.group(1)), self.path), "Figure", 900, 520), "image/png")
         if p == "/api/Reader/image":
