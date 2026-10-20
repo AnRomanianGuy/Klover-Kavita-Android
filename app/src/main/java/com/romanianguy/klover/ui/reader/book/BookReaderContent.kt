@@ -71,12 +71,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.romanianguy.klover.R
+import com.romanianguy.klover.data.network.ServerUrls
 import com.romanianguy.klover.data.prefs.AppSettings
 import com.romanianguy.klover.data.prefs.BookFont
 import com.romanianguy.klover.data.prefs.BookMargins
@@ -95,6 +97,7 @@ import com.romanianguy.klover.ui.common.PageSheet
 import com.romanianguy.klover.ui.common.foldSettle
 import com.romanianguy.klover.ui.common.loadable
 import com.romanianguy.klover.ui.common.rememberBookInset
+import com.romanianguy.klover.ui.common.rememberNotificationAsker
 import com.romanianguy.klover.ui.reader.BottomControls
 import com.romanianguy.klover.ui.reader.EndOfChapter
 import com.romanianguy.klover.ui.reader.ImmersiveMode
@@ -161,35 +164,38 @@ internal fun BookReaderContent(
 
     val controller = remember { BookPageController() }
     val readAloud = rememberReadAloud()
-    var wantsPlay by remember { mutableStateOf(false) }
-    var paused by remember { mutableStateOf(false) }
-    var sleepMinutes by remember { mutableIntStateOf(0) } // 0 off, -1 end of section
+    // the voice runs on its own, with the screen off too, so reading is its state, not the page's
+    val wantsPlay by readAloud::active
+    val paused by readAloud::paused
+    val sleepMinutes by readAloud::sleepMinutes // 0 off, -1 end of section
+    val askNotifications = rememberNotificationAsker()
     // section text as the page has it, so a spoken position maps to the screen
     var sectionText by remember { mutableStateOf("") }
     var textReady by remember { mutableStateOf(false) }
     LaunchedEffect(prefs.ttsSpeed) { readAloud.setSpeed(prefs.ttsSpeed) }
     fun screenFraction(index: Int) = if (screens > 1) index / screens.toFloat() else 0f
     fun startReading(fromOffset: Int? = null) {
-        wantsPlay = true
-        paused = false
-        if (fromOffset != null) readAloud.playAt(sectionText, fromOffset) else readAloud.play(
-            sectionText,
-            screenFraction(screen),
-        )
+        askNotifications()
+        when {
+            !textReady -> readAloud.beginWithoutText()
+            fromOffset != null -> readAloud.begin(section, sectionText, fromOffset)
+            else -> readAloud.begin(section, sectionText, screenFraction(screen))
+        }
     }
-    fun stopReading() {
-        wantsPlay = false
-        paused = false
-        readAloud.stop()
-    }
+    fun stopReading() = readAloud.end()
     LaunchedEffect(section) {
         sectionText = ""
         textReady = false
-        readAloud.reset(resume.fraction.takeIf { it < 0.95f } ?: 0f)
+        // the voice moved on to this section by itself and is already reading it; anything else starts the section over
+        if (!(readAloud.active && readAloud.section == section)) {
+            readAloud.reset(resume.fraction.takeIf { it < 0.95f } ?: 0f)
+        }
     }
     // new text arrived while reading: carry on (picture-only pages count as read)
     LaunchedEffect(sectionText, textReady) {
-        if (textReady && wantsPlay && !paused) readAloud.play(sectionText, readAloud.progress)
+        if (textReady && wantsPlay && !paused && readAloud.section != section) {
+            readAloud.play(section, sectionText, readAloud.progress)
+        }
     }
     LaunchedEffect(readAloud.position, readAloud.wordEnd, wantsPlay, textReady) {
         if (wantsPlay && textReady && sectionText.isNotEmpty()) {
@@ -203,13 +209,6 @@ internal fun BookReaderContent(
         if (readAloud.failed) {
             stopReading()
             Toast.makeText(context, R.string.read_aloud_unavailable, Toast.LENGTH_LONG).show()
-        }
-    }
-    LaunchedEffect(wantsPlay, sleepMinutes) {
-        if (wantsPlay && sleepMinutes > 0) {
-            delay(sleepMinutes * 60_000L)
-            stopReading()
-            sleepMinutes = 0
         }
     }
 
@@ -302,7 +301,7 @@ internal fun BookReaderContent(
                 controller.goTo(target)
                 if (delta > 0) viewModel.notePages(1)
                 // turning by hand restarts the voice at the top of the new screen
-                if (wantsPlay && !paused && sectionText.isNotEmpty()) readAloud.play(sectionText, screenFraction(target))
+                if (wantsPlay && !paused && sectionText.isNotEmpty()) readAloud.play(section, sectionText, screenFraction(target))
             }
 
             delta > 0 && section < sections - 1 -> {
@@ -314,19 +313,27 @@ internal fun BookReaderContent(
         }
     }
 
+    // what the voice needs to go on by itself, and the name in the media notification (not the book's in incognito)
+    val resources = LocalResources.current
+    val aloudTitle = if (prefs.incognito) stringResource(R.string.read_aloud) else ready.info.seriesName.orEmpty()
+    val aloudChapter = if (prefs.incognito) "" else ready.info.title?.takeIf { it.isNotBlank() } ?: ready.info.chapterTitle.orEmpty()
     SideEffect {
-        readAloud.onFinished = {
-            when {
-                !wantsPlay -> Unit
-                sleepMinutes == -1 -> {
-                    stopReading()
-                    sleepMinutes = 0
-                }
-
-                prefs.ttsAutoNext && section < sections - 1 -> openSection(section + 1, 0f)
-                else -> stopReading()
-            }
-        }
+        readAloud.host = NarrationHost(
+            sections = sections,
+            autoNext = prefs.ttsAutoNext,
+            title = aloudTitle,
+            subtitle = { index ->
+                val label = resources.getString(R.string.book_section_label, index + 1, sections)
+                if (aloudChapter.isBlank()) label else "$aloudChapter  ·  $label"
+            },
+            loadSpeech = { index -> withContext(Dispatchers.Default) { parseBookSection(viewModel.bookSection(index)).speech } },
+            onAdvanced = { index -> viewModel.saveProgress(index) },
+        )
+    }
+    // the voice went on to another section while the page was not looking (screen off): the page catches up
+    LaunchedEffect(readAloud.section) {
+        val voice = readAloud.section
+        if (readAloud.active && voice >= 0 && voice != section) openSection(voice, readAloud.progress)
     }
     val readAloudBar: @Composable (Modifier) -> Unit = { barModifier ->
         ReadAloudBar(
@@ -336,33 +343,11 @@ internal fun BookReaderContent(
             onSeek = { fraction ->
                 readAloud.seekTo(sectionText, fraction)
             },
-            onToggle = {
-                if (paused) {
-                    paused = false
-                    readAloud.playAt(sectionText, readAloud.position)
-                } else {
-                    paused = true
-                    readAloud.pause()
-                }
-            },
-            onPreviousSentence = {
-                val to = previousSentenceStart(sectionText, readAloud.position)
-                if (paused) {
-                    readAloud.seekTo(sectionText, to.toFloat() / sectionText.length.coerceAtLeast(1))
-                } else {
-                    readAloud.playAt(sectionText, to)
-                }
-            },
-            onNextSentence = {
-                val to = nextSentenceStart(sectionText, readAloud.position)
-                if (to >= sectionText.length) readAloud.onFinished()
-                else if (paused) readAloud.seekTo(sectionText, to.toFloat() / sectionText.length) else readAloud.playAt(
-                    sectionText,
-                    to,
-                )
-            },
+            onToggle = readAloud::togglePause,
+            onPreviousSentence = readAloud::previousSentence,
+            onNextSentence = readAloud::nextSentence,
             onSpeed = { viewModel.setPref(PrefKeys.TTS_SPEED, it) },
-            onSleep = { sleepMinutes = it },
+            onSleep = readAloud::setSleep,
             onClose = { stopReading() },
             progress = { readAloud.progress },
             modifier = barModifier,
@@ -491,6 +476,7 @@ internal fun BookReaderContent(
     val atEnd = section >= sections - 1 && screen >= screens - 1
     SideEffect { viewModel.controlsShown = overlayVisible }
 
+    val urls = koinInject<ServerUrls>()
     Box(
         Modifier
             .fillMaxSize()
@@ -501,6 +487,13 @@ internal fun BookReaderContent(
                 onNext = { turn(+1) },
             ),
     ) {
+        // the cover for the media control, only in the open book's name (not in incognito)
+        NarrationCover(
+            enabled = wantsPlay && !prefs.incognito,
+            url = ready.info.seriesId.takeIf { it > 0 }?.let { urls.seriesCover(it) },
+            title = ready.info.seriesName.orEmpty(),
+            onArt = { readAloud.artwork = it },
+        )
         when (val state = html) {
             Loadable.Loading -> LoadingState()
             is Loadable.Failed -> ErrorState(stringResource(R.string.error_generic), onRetry = { attempt++ })

@@ -1,6 +1,8 @@
 package com.romanianguy.klover.ui.reader.book
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.media.AudioAttributes
 import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
@@ -15,6 +17,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 private val HIDDEN_BLOCKS = Regex(
@@ -178,9 +189,43 @@ class SpeakingRate {
     }
 }
 
+// what happens when a section has been read to its end
+enum class AfterSection { Idle, Stop, Advance }
+
+fun afterSection(active: Boolean, sleepAtEnd: Boolean, autoNext: Boolean, section: Int, sections: Int): AfterSection = when {
+    !active -> AfterSection.Idle
+    sleepAtEnd -> AfterSection.Stop
+    autoNext && section >= 0 && section < sections - 1 -> AfterSection.Advance
+    else -> AfterSection.Stop
+}
+
+// what the media notification shows and the controls act on
+data class NarrationState(
+    val active: Boolean = false,
+    val paused: Boolean = false,
+    val title: String = "",
+    val subtitle: String = "",
+    val artwork: Bitmap? = null,
+)
+
+// What the reader tells the voice about the book, so it can go on to the next section by itself with the screen off.
+class NarrationHost(
+    val sections: Int,
+    val autoNext: Boolean,
+    val title: String,
+    val subtitle: (section: Int) -> String,
+    // the spoken text of a section, as the page has it
+    val loadSpeech: suspend (section: Int) -> String,
+    // the voice moved on to a section
+    val onAdvanced: (section: Int) -> Unit,
+)
+
+// The voice. It keeps going when the reader is not drawn (screen off, another app in front): it moves on from section
+// to section itself, and a foreground service shows the controls. It lives and dies with the open reader.
 class ReadAloud(context: Context) {
     private val appContext = context.applicationContext
     private val main = Handler(Looper.getMainLooper())
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     var speaking by mutableStateOf(false)
         private set
@@ -197,7 +242,33 @@ class ReadAloud(context: Context) {
     var failed by mutableStateOf(false)
         private set
 
-    var onFinished: () -> Unit = {}
+    // reading is on (it may be paused)
+    var active by mutableStateOf(false)
+        private set
+
+    var paused by mutableStateOf(false)
+        private set
+
+    // 0 off, -1 at the end of the section, else minutes
+    var sleepMinutes by mutableIntStateOf(0)
+        private set
+
+    // the section whose text the voice has, -1 when it has none
+    var section by mutableIntStateOf(-1)
+        private set
+
+    var host: NarrationHost? = null
+
+    // the cover shown in the media control
+    var artwork: Bitmap? = null
+        set(value) {
+            if (field === value) return
+            field = value
+            publish()
+        }
+
+    private val _state = MutableStateFlow(NarrationState())
+    val state: StateFlow<NarrationState> = _state
 
     private var speed = 1f
     private var tts: TextToSpeech? = null
@@ -208,21 +279,101 @@ class ReadAloud(context: Context) {
     private var chunks: List<SpeechChunk> = emptyList()
     private var generation = 0
     private var offset = 0
+    private var advancing: Job? = null
+    private var sleeping: Job? = null
 
     fun setSpeed(value: Float) {
         if (speed == value) return
         speed = value
         tts?.setSpeechRate(value)
         // restart the current sentence so the new speed is heard right away
-        if (speaking) playAt(text, offset)
+        if (speaking) playAt(section, text, offset)
     }
 
-    fun play(fullText: String, fraction: Float) = playAt(
+    // starts reading [fullText], the text of [forSection], from a word
+    fun begin(forSection: Int, fullText: String, fromOffset: Int) {
+        active = true
+        paused = false
+        publish()
+        NarrationHub.current = this
+        NarrationService.start(appContext)
+        playAt(forSection, fullText, fromOffset)
+    }
+
+    fun begin(forSection: Int, fullText: String, fraction: Float) =
+        begin(forSection, fullText, (fullText.length * fraction.coerceIn(0f, 1f)).toInt())
+
+    // reading is on but the text is not here yet (the page is still being laid out): it starts when it arrives
+    fun beginWithoutText() {
+        active = true
+        paused = false
+        publish()
+        NarrationHub.current = this
+        NarrationService.start(appContext)
+    }
+
+    fun end() {
+        active = false
+        paused = false
+        sleepMinutes = 0
+        sleeping?.cancel()
+        advancing?.cancel()
+        stop()
+        publish()
+        NarrationHub.release(this)
+    }
+
+    fun pauseReading() {
+        if (!active || paused) return
+        paused = true
+        pause()
+        publish()
+    }
+
+    fun resumeReading() {
+        if (!active || !paused) return
+        paused = false
+        publish()
+        if (section >= 0) playAt(section, text, offset)
+    }
+
+    fun togglePause() = if (paused) resumeReading() else pauseReading()
+
+    fun nextSentence() {
+        val to = nextSentenceStart(text, offset)
+        when {
+            to >= text.length -> finishSection()
+            paused -> seekTo(text, to.toFloat() / text.length)
+            else -> playAt(section, text, to)
+        }
+    }
+
+    fun previousSentence() {
+        val to = previousSentenceStart(text, offset)
+        if (paused) seekTo(text, to.toFloat() / text.length.coerceAtLeast(1)) else playAt(section, text, to)
+    }
+
+    fun setSleep(minutes: Int) {
+        sleepMinutes = minutes
+        sleeping?.cancel()
+        if (minutes > 0) {
+            sleeping = scope.launch {
+                delay(minutes * 60_000L)
+                sleepMinutes = 0
+                end()
+            }
+        }
+    }
+
+    fun play(forSection: Int, fullText: String, fraction: Float) = playAt(
+        forSection,
         fullText,
         (fullText.length * fraction.coerceIn(0f, 1f)).toInt(),
     )
 
-    fun playAt(fullText: String, fromOffset: Int) {
+    fun playAt(forSection: Int, fullText: String, fromOffset: Int) {
+        advancing?.cancel()
+        section = forSection
         text = fullText
         offset = fromOffset.coerceIn(0, fullText.length)
         // chunk from the chosen word, not from the start of its chunk
@@ -230,10 +381,11 @@ class ReadAloud(context: Context) {
         position = offset
         wordEnd = offset
         if (fullText.isNotEmpty()) progress = (offset.toFloat() / fullText.length).coerceIn(0f, 1f)
+        publish()
         if (chunks.isEmpty()) {
             // nothing to say (picture page), count it as read
             speaking = false
-            main.post { onFinished() }
+            main.post { finishSection() }
             return
         }
         whenReady { startSpeaking() }
@@ -242,7 +394,7 @@ class ReadAloud(context: Context) {
     fun seekTo(fullText: String, fraction: Float) {
         val target = (fullText.length * fraction.coerceIn(0f, 1f)).toInt()
         if (speaking) {
-            playAt(fullText, target)
+            playAt(section, fullText, target)
         } else {
             text = fullText
             offset = target
@@ -252,15 +404,18 @@ class ReadAloud(context: Context) {
         }
     }
 
+    // a new section is being opened by hand: the voice has no text for it yet
     fun reset(fraction: Float = 0f) {
+        advancing?.cancel()
         stop()
+        section = -1
         progress = fraction
         offset = 0
         position = 0
         wordEnd = 0
     }
 
-    fun pause() {
+    private fun pause() {
         generation++
         // paused before the engine finished starting, drop the queued start
         waiting = null
@@ -268,11 +423,7 @@ class ReadAloud(context: Context) {
         tts?.stop()
     }
 
-    fun resume() {
-        if (chunks.isNotEmpty()) whenReady { startSpeaking() }
-    }
-
-    fun stop() {
+    private fun stop() {
         generation++
         waiting = null
         speaking = false
@@ -283,6 +434,11 @@ class ReadAloud(context: Context) {
     }
 
     fun shutdown() {
+        advancing?.cancel()
+        sleeping?.cancel()
+        scope.cancel()
+        active = false
+        paused = false
         generation++
         waiting = null
         speaking = false
@@ -290,6 +446,49 @@ class ReadAloud(context: Context) {
         tts?.shutdown()
         tts = null
         ready = false
+        publish()
+        NarrationHub.release(this)
+    }
+
+    private fun publish() {
+        val info = host
+        _state.value = NarrationState(
+            active = active,
+            paused = paused,
+            title = info?.title.orEmpty(),
+            subtitle = info?.subtitle?.invoke(section.coerceAtLeast(0)).orEmpty(),
+            artwork = artwork,
+        )
+    }
+
+    private fun finishSection() {
+        val info = host
+        when (afterSection(active, sleepMinutes == -1, info?.autoNext == true, section, info?.sections ?: 0)) {
+            AfterSection.Idle -> Unit
+            AfterSection.Stop -> {
+                speaking = false
+                progress = 1f
+                sleepMinutes = 0
+                end()
+            }
+            AfterSection.Advance -> advance(section + 1)
+        }
+    }
+
+    // the next section's text is fetched here, not by the page, so it goes on with the screen off
+    private fun advance(next: Int) {
+        val info = host ?: return end()
+        advancing?.cancel()
+        advancing = scope.launch {
+            val spoken = runCatching { info.loadSpeech(next) }.getOrNull()
+            if (spoken == null) {
+                end()
+                return@launch
+            }
+            if (!active || paused) return@launch
+            info.onAdvanced(next)
+            playAt(next, spoken, 0)
+        }
     }
 
     private fun whenReady(block: () -> Unit) {
@@ -307,6 +506,12 @@ class ReadAloud(context: Context) {
                                 .takeIf { engine.isLanguageAvailable(it) >= TextToSpeech.LANG_AVAILABLE }
                                 ?: Locale.US
                             engine.setSpeechRate(speed)
+                            engine.setAudioAttributes(
+                                AudioAttributes.Builder()
+                                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                                    .build(),
+                            )
                             engine.setOnUtteranceProgressListener(listener)
                         }
                         ready = true
@@ -354,7 +559,7 @@ class ReadAloud(context: Context) {
                 if (index >= chunks.lastIndex) {
                     speaking = false
                     progress = 1f
-                    onFinished()
+                    finishSection()
                 }
             }
         }
@@ -388,6 +593,16 @@ class ReadAloud(context: Context) {
 
     private companion object {
         val ID = Regex("g(\\d+)c(\\d+)")
+    }
+}
+
+// the voice that is reading now, for the service that shows its controls
+object NarrationHub {
+    @Volatile
+    var current: ReadAloud? = null
+
+    fun release(narrator: ReadAloud) {
+        if (current === narrator) current = null
     }
 }
 
