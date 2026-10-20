@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -42,92 +43,127 @@ private val Stem = Color(0xFF5B8A32)
 private val StemDark = Color(0xFF3F6420)
 private val Glow = Color(0xFFFFE08A)
 
-// what the event puts on the screen, drawn over the app and never in the way of a touch: webs and spiders in the top
-// corners (kept in the band of the status bar, clear of the top bar), pumpkins on the bottom corners and bats. With a
-// book open on two pages it all goes on the right one, the screen, and there is more of it on a wide window. [startX] is
-// where that page starts; [perched] says the pumpkins sit on the floating bar instead of the corners
+// what the event puts on the screen, drawn over the app and never in the way of a touch: webs and a spider in the top
+// corners (kept in the band of the status bar, clear of the top bar), bats, pumpkins on the bottom corners and one leaning
+// into the bottom right corner. With a book open on two pages this goes on the right one, the screen, and there is more of
+// it on a wide window. [startX] is where that page starts; [perched] says the pumpkins sit on the floating bar instead of
+// the corners
 @Composable
-fun SeasonalDecor(
-    layer: DecorLayer,
-    bottomInset: Dp,
-    modifier: Modifier = Modifier,
-    startX: Dp = 0.dp,
-    perched: Boolean = false,
-) {
+fun SeasonalDecor(bottomInset: Dp, modifier: Modifier = Modifier, startX: Dp = 0.dp, perched: Boolean = false) {
     val event = LocalActiveEvent.current ?: return
     when (event.event) {
-        SeasonalEvent.Halloween -> HalloweenDecor(layer, bottomInset, startX, perched, modifier)
+        SeasonalEvent.Halloween -> HalloweenDecor(bottomInset, startX, perched, modifier)
     }
 }
 
-// the top of the screen goes over the app (it stays in the band of the status bar, clear of every button); the bottom goes
-// behind it, so cards and buttons are on top of the pumpkins and only a bit of each shows
-enum class DecorLayer { Top, Bottom }
-
+// the left page of an open book is decorated too. It is drawn behind that page's controls, so every button, row and card
+// on the page stays on top of it
 @Composable
-private fun HalloweenDecor(layer: DecorLayer, bottomInset: Dp, startX: Dp, perched: Boolean, modifier: Modifier) {
+fun SeasonalPageDecor(modifier: Modifier = Modifier) {
+    val event = LocalActiveEvent.current ?: return
+    if (event.event != SeasonalEvent.Halloween) return
     val scheme = MaterialTheme.colorScheme
-    val dark = scheme.surface.luminance() < 0.5f
-    // the colours come from the app's own: the webs are its text colour, the spider and the bats lean on its accents
-    val strand = scheme.onSurface.copy(alpha = if (dark) 0.42f else 0.36f)
-    val spider = scheme.onSurfaceVariant
-    val bat = lerp(Color(0xFF7A4DD6), scheme.tertiary, 0.45f)
+    val colors = remember(scheme) { HalloweenColors.of(scheme) }
+    val arrive = rememberArrival()
+    Canvas(modifier.fillMaxSize().clearAndSetSemantics { }) {
+        val t = arrive.value
+        val dp = density
+        val w = size.width
+        val h = size.height
+        val strand = colors.strand.copy(alpha = colors.strand.alpha * t)
+        drawWeb(Offset(0f, 0f), 150 * dp, 120 * dp, 1f, strand)
+        drawWeb(Offset(w, 0f), 118 * dp, 96 * dp, -1f, strand)
+        // the spider hangs down the empty middle of the page, its thread running behind the profile card
+        val thread = (h * 0.22f).coerceAtMost(210 * dp) * overshoot(t)
+        drawSpider(Offset(w * 0.74f, 0f), thread, dp, colors.spider, strand.copy(alpha = 0.7f * t))
+        val bats = listOf(
+            Triple(0.18f, 0.29f, 24f), Triple(0.34f, 0.36f, 17f), Triple(0.50f, 0.3f, 21f), Triple(0.62f, 0.41f, 15f),
+        )
+        for ((fx, fy, span) in bats) {
+            drawBat(Offset(w * fx, h * fy + 12 * dp * (1f - t)), span * dp, colors.bat.copy(alpha = t))
+        }
+        // pumpkins at the foot of the page, the Continue button above them
+        fun peek(x: Float, width: Float) {
+            val ph = width * 0.78f
+            drawPumpkin(Offset(x, h - ph * 0.2f + ph * 0.7f * (1f - t)), width, t)
+        }
+        peek(w * 0.16f, 58 * dp)
+        peek(w * 0.16f + 50 * dp, 36 * dp)
+        peek(w * 0.86f, 52 * dp)
+        peek(w * 0.86f - 44 * dp, 30 * dp)
+    }
+}
+
+private class HalloweenColors(val strand: Color, val spider: Color, val bat: Color) {
+    companion object {
+        // the colours come from the app's own: the webs are its text colour, the spider and the bats lean on its accents
+        fun of(scheme: androidx.compose.material3.ColorScheme): HalloweenColors {
+            val dark = scheme.surface.luminance() < 0.5f
+            return HalloweenColors(
+                strand = scheme.onSurface.copy(alpha = if (dark) 0.42f else 0.36f),
+                spider = scheme.onSurfaceVariant,
+                bat = lerp(Color(0xFF7A4DD6), scheme.tertiary, 0.45f),
+            )
+        }
+    }
+}
+
+// arrives once when the screen opens and then stays as it is
+@Composable
+private fun rememberArrival(): Animatable<Float, androidx.compose.animation.core.AnimationVector1D> {
     val reduced = LocalAppSettings.current.reducedMotion()
-    // the top decorations stay inside the band of the status bar, so they never sit on the top bar's title or buttons
-    val band = (WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 6.dp).coerceIn(34.dp, 64.dp)
-    // arrives once when the screen opens and then stays as it is
     val arrive = remember { Animatable(if (reduced) 1f else 0f) }
     LaunchedEffect(Unit) {
         if (arrive.value < 1f) arrive.animateTo(1f, tween(1500, easing = FastOutSlowInEasing))
     }
+    return arrive
+}
+
+@Composable
+private fun HalloweenDecor(bottomInset: Dp, startX: Dp, perched: Boolean, modifier: Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    val colors = remember(scheme) { HalloweenColors.of(scheme) }
+    val strand = colors.strand
+    val spider = colors.spider
+    val bat = colors.bat
+    // the top decorations stay inside the band of the status bar, so they never sit on the top bar's title or buttons
+    val band = (WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 6.dp).coerceIn(34.dp, 64.dp)
+    val arrive = rememberArrival()
 
     Box(modifier.fillMaxSize().clearAndSetSemantics { }) {
-        Canvas(Modifier.fillMaxSize().padding(bottom = bottomInset)) {
+        Canvas(Modifier.fillMaxSize()) {
             val t = arrive.value
             val dp = density
             val x0 = startX.toPx()
             val room = size.width - x0
             // a wide window, or the page of an open book, has room for more
             val wide = startX.value > 0f || room > 520 * dp
-            if (layer == DecorLayer.Top) {
-                val ry = band.toPx()
-                val color = strand.copy(alpha = strand.alpha * t)
-                drawWeb(Offset(x0, 0f), (if (wide) 150 else 112) * dp, ry, 1f, color)
-                drawWeb(Offset(size.width, 0f), (if (wide) 120 else 84) * dp, ry, -1f, color)
+            val ry = band.toPx()
+            val color = strand.copy(alpha = strand.alpha * t)
+            drawWeb(Offset(x0, 0f), (if (wide) 150 else 112) * dp, ry, 1f, color)
+            drawWeb(Offset(size.width, 0f), (if (wide) 120 else 84) * dp, ry, -1f, color)
 
-                // the spider lowers itself on its thread and swings a little past where it stops
-                val scale = (band.value / 54f).coerceIn(0.62f, 1f)
-                val thread = ry * 0.3f * overshoot(t)
-                drawSpider(Offset(x0 + (if (wide) 46 else 84) * dp, 0f), thread, dp * scale, spider, color.copy(alpha = 0.7f * t))
+            // the spider lowers itself on its thread and swings a little past where it stops
+            val scale = (band.value / 54f).coerceIn(0.62f, 1f)
+            val thread = ry * 0.3f * overshoot(t)
+            drawSpider(Offset(x0 + (if (wide) 46 else 84) * dp, 0f), thread, dp * scale, spider, color.copy(alpha = 0.7f * t))
 
-                val spots = if (wide) {
-                    listOf(0.26f to 0.34f, 0.34f to 0.62f, 0.42f to 0.26f, 0.5f to 0.58f, 0.57f to 0.3f)
-                } else {
-                    listOf(0.38f to 0.34f, 0.47f to 0.62f, 0.55f to 0.26f)
-                }
-                for ((i, spot) in spots.withIndex()) {
-                    val s = (if (i % 2 == 0) 22f else 16f) * dp * scale
-                    drawBat(Offset(x0 + room * spot.first, ry * spot.second + s * 0.4f * (1f - t)), s, bat.copy(alpha = t))
-                }
-
-                if (wide) {
-                    // one big pumpkin leaning into the bottom right corner with half of it out of the screen: the corner
-                    // is empty margin, so it is the one that is not hidden behind the screen
-                    val big = 96 * dp
-                    drawPumpkin(
-                        Offset(size.width - 2 * dp, size.height + 2 * dp + big * 0.5f * (1f - t)),
-                        big,
-                        t,
-                        tilt = -24f,
-                    )
-                }
+            val spots = if (wide) {
+                listOf(0.26f to 0.34f, 0.34f to 0.62f, 0.42f to 0.26f, 0.5f to 0.58f, 0.57f to 0.3f)
+            } else {
+                listOf(0.38f to 0.34f, 0.47f to 0.62f, 0.55f to 0.26f)
+            }
+            for ((i, spot) in spots.withIndex()) {
+                val s = (if (i % 2 == 0) 22f else 16f) * dp * scale
+                drawBat(Offset(x0 + room * spot.first, ry * spot.second + s * 0.4f * (1f - t)), s, bat.copy(alpha = t))
             }
 
-            if (layer == DecorLayer.Bottom && !perched) {
-                // they peek up over the bottom edge, so they hide little of what is on the screen
+            // pumpkins in the bottom corners, over what is there (on a phone they sit on the floating bar instead)
+            val floor = size.height - bottomInset.toPx()
+            if (!perched) {
                 fun peek(x: Float, width: Float) {
                     val h = width * 0.78f
-                    drawPumpkin(Offset(x, size.height - h * 0.2f + h * 0.7f * (1f - t)), width, t)
+                    drawPumpkin(Offset(x, floor - h * 0.2f + h * 0.7f * (1f - t)), width, t)
                 }
                 peek(x0 + 46 * dp, 54 * dp)
                 peek(x0 + 94 * dp, 34 * dp)
@@ -139,20 +175,35 @@ private fun HalloweenDecor(layer: DecorLayer, bottomInset: Dp, startX: Dp, perch
                     peek(size.width - 50 * dp, 58 * dp)
                 }
             }
+            if (wide) {
+                // one big pumpkin leaning into the bottom right corner with half of it out of the screen
+                val big = 96 * dp
+                drawPumpkin(
+                    Offset(size.width - 2 * dp, size.height + 2 * dp + big * 0.5f * (1f - t)),
+                    big,
+                    t,
+                    tilt = -24f,
+                )
+            }
         }
     }
 }
 
-// pumpkins peeking out from behind the top corners of the thing this is put on, such as the floating bar: it stays on top
+// pumpkins sitting on the top corners of the thing this is put on, such as the floating bar. Over it, or with [behind] set
+// peeking out from behind it
 @Composable
-fun Modifier.eventPerch(): Modifier {
+fun Modifier.eventPerch(behind: Boolean = false): Modifier {
     val event = LocalActiveEvent.current ?: return this
     if (event.event != SeasonalEvent.Halloween) return this
-    return drawBehind {
+    val sit: DrawScope.() -> Unit = {
         val dp = density
-        drawPumpkin(Offset(26 * dp, -3 * dp), 42 * dp)
-        drawPumpkin(Offset(size.width - 24 * dp, -2 * dp), 36 * dp)
-        drawPumpkin(Offset(size.width - 54 * dp, 3 * dp), 22 * dp)
+        drawPumpkin(Offset(26 * dp, -6 * dp), 42 * dp)
+        drawPumpkin(Offset(size.width - 24 * dp, -5 * dp), 36 * dp)
+        drawPumpkin(Offset(size.width - 54 * dp, 0f), 22 * dp)
+    }
+    return if (behind) drawBehind(sit) else drawWithContent {
+        drawContent()
+        sit()
     }
 }
 

@@ -61,9 +61,6 @@ import com.romanianguy.klover.ui.common.LocalAppSettings
 import com.romanianguy.klover.ui.common.LocalOpenTransition
 import com.romanianguy.klover.ui.common.rememberBookHinge
 import com.romanianguy.klover.ui.downloads.DownloadsScreen
-import com.romanianguy.klover.ui.events.DecorLayer
-import com.romanianguy.klover.ui.events.EventBackdrop
-import com.romanianguy.klover.ui.events.LocalActiveEvent
 import com.romanianguy.klover.ui.events.SeasonalDecor
 import com.romanianguy.klover.ui.events.eventPerch
 import com.romanianguy.klover.ui.garden.GardenScreen
@@ -185,14 +182,6 @@ fun MainShell(startTab: TopLevelDestination = TopLevelDestination.Home) {
                 .fillMaxSize()
                 .then(if (inReader) Modifier else Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(horizontalSides))),
         ) {
-            if (!inReader) {
-                SeasonalDecor(
-                    DecorLayer.Bottom,
-                    bottomInset = if (showFloatingBar) FloatingBarFootprint + systemBarInset else systemBarInset,
-                    startX = screenStart,
-                    perched = showFloatingBar,
-                )
-            }
             CompositionLocalProvider(
                 LocalFloatingBarInset provides if (showFloatingBar) FloatingBarFootprint + systemBarInset else 0.dp,
             ) {
@@ -225,7 +214,6 @@ fun MainShell(startTab: TopLevelDestination = TopLevelDestination.Home) {
                 CompositionLocalProvider(
                     LocalProfilePicker provides if (bookMode) null else openProfilePicker,
                 ) {
-                EventBackdrop(clear = LocalActiveEvent.current != null && !inReader) {
                 NavDisplay(
                     backStack = navigator.backStack,
                     // Every tab root is in the list, so NavDisplay always intercepts Back; at the Home root we close
@@ -300,13 +288,16 @@ fun MainShell(startTab: TopLevelDestination = TopLevelDestination.Home) {
                     },
                 )
                 }
-                }
                     }
                 }
             }
 
             if (!inReader) {
-                SeasonalDecor(DecorLayer.Top, bottomInset = 0.dp, startX = screenStart)
+                SeasonalDecor(
+                    bottomInset = if (showFloatingBar) FloatingBarFootprint + systemBarInset else systemBarInset,
+                    startX = screenStart,
+                    perched = showFloatingBar,
+                )
             }
 
             AnimatedVisibility(

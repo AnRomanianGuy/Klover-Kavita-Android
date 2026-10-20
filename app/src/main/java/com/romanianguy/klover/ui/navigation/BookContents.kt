@@ -65,6 +65,8 @@ import com.romanianguy.klover.data.history.LastReadStore
 import com.romanianguy.klover.data.prefs.MotionStyle
 import com.romanianguy.klover.ui.common.LocalAppSettings
 import com.romanianguy.klover.ui.common.bouncyClickable
+import com.romanianguy.klover.ui.events.SeasonalPageDecor
+import com.romanianguy.klover.ui.events.eventPerch
 import com.romanianguy.klover.ui.profiles.ProfileAvatar
 import com.romanianguy.klover.ui.profiles.rememberCurrentProfile
 import com.romanianguy.klover.ui.stats.rememberStatsSummary
@@ -88,6 +90,8 @@ fun BookContentsPage(
         Box(Modifier.fillMaxSize().clipToBounds()) {
             // A big soft cookie in the corner, turning very slowly: the page is not flat paper.
             Backdrop(Modifier.align(Alignment.TopEnd).offset(x = 70.dp, y = (-50).dp))
+            // the event's decoration, behind everything that can be pressed
+            SeasonalPageDecor()
             Column(
                 Modifier
                     .fillMaxSize()
@@ -283,7 +287,7 @@ private fun ContinueRow(label: String, onClick: () -> Unit) {
         shape = MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.tertiaryContainer,
         contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-        modifier = Modifier.fillMaxWidth().bouncyClickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth().eventPerch(behind = true).bouncyClickable(onClick = onClick),
     ) {
         Row(
             Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
