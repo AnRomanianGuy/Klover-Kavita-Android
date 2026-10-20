@@ -32,7 +32,7 @@ Builds:
       - rm -f ../gradle/gradle-daemon-jvm.properties
       - sed -i -e '/foojay-resolver-convention/d' ../settings.gradle.kts
 
-AutoUpdateMode: Version
+AutoUpdateMode: Version v%v
 UpdateCheckMode: Tags
 CurrentVersion: '1.2'
 CurrentVersionCode: 3
