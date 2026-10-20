@@ -31,6 +31,8 @@ data class SavedProfile(
     val tone: Int = 0,
     val shape: Int = 0,
     val photo: String? = null,
+    // the event whose border the profile wears while that event is on, like "halloween-2026"
+    val seasonal: String? = null,
     // token, refresh token and API key, encrypted
     val sealed: String,
     val addedAt: Long = 0,
@@ -147,6 +149,8 @@ class ProfileStore(
     fun setShape(key: String, shape: Int) = edit(key) { it.copy(shape = shape.coerceIn(0, PROFILE_SHAPES - 1)) }
 
     fun setTone(key: String, tone: Int) = edit(key) { it.copy(tone = tone.coerceIn(0, PROFILE_TONES - 1)) }
+
+    fun setSeasonal(key: String, event: String?) = edit(key) { it.copy(seasonal = event) }
 
     fun setPhoto(key: String, photo: String?) {
         val old = _profiles.value.firstOrNull { it.key == key }?.photo

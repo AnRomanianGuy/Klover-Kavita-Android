@@ -250,6 +250,12 @@ private fun AppearanceTab(settings: AppSettings, vm: SettingsViewModel) {
                 Text(stringResource(it.labelRes()), maxLines = 1)
             }
         }
+        SwitchSetting(
+            title = R.string.settings_seasonal,
+            hint = R.string.settings_seasonal_hint,
+            checked = settings.seasonalEvents,
+            onChange = { vm.set(PrefKeys.SEASONAL_EVENTS, it) },
+        )
         ChoiceSetting(R.string.settings_nav_labels) {
             ConnectedChoiceGroup(NavLabels.entries, settings.navLabels, { vm.setEnum(PrefKeys.NAV_LABELS, it) }) {
                 Text(stringResource(it.labelRes()), maxLines = 1)

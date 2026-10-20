@@ -126,4 +126,29 @@ class ProfileBackupTest {
         assertEquals("Sam the reader", read.name)
         assertEquals(11, read.shape)
     }
+
+    @Test
+    fun theEventBorderIsChosenPerProfileAndTravelsInTheBackup() {
+        val before = rig()
+        before.store.setSeasonal(before.key, "halloween-2026")
+        assertEquals("halloween-2026", before.store.profiles.value.single().seasonal)
+        val backup = before.store.backupOf(before.key)!!
+        assertEquals("halloween-2026", backup.seasonal)
+
+        val after = rig()
+        assertNull(after.store.profiles.value.single().seasonal)
+        after.store.restore(after.key, backup, now = 5)
+        assertEquals("halloween-2026", after.store.profiles.value.single().seasonal)
+
+        after.store.setSeasonal(after.key, null)
+        assertNull(after.store.profiles.value.single().seasonal)
+    }
+
+    @Test
+    fun aBackupFromBeforeEventsHasNoBorderAndClearsOne() {
+        val rig = rig()
+        rig.store.setSeasonal(rig.key, "halloween-2026")
+        rig.store.restore(rig.key, ProfileBackup(name = "Sam"))
+        assertNull(rig.store.profiles.value.single().seasonal)
+    }
 }

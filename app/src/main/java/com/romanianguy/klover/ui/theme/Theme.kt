@@ -21,6 +21,7 @@ import com.romanianguy.klover.data.prefs.AppSettings
 import com.romanianguy.klover.data.prefs.MotionStyle
 import com.romanianguy.klover.data.prefs.ThemeMode
 import com.romanianguy.klover.ui.common.LocalAppSettings
+import com.romanianguy.klover.ui.events.ProvideActiveEvent
 
 @Composable
 fun isAppDark(settings: AppSettings): Boolean = when (settings.themeMode) {
@@ -64,7 +65,7 @@ fun KloverTheme(
             // Calm and Reduced use the standard (non-bouncy) motion tokens everywhere in the app.
             motionScheme = if (settings.motionStyle == MotionStyle.Bouncy) MotionScheme.expressive() else MotionScheme.standard(),
             typography = typography,
-            content = content,
+            content = { ProvideActiveEvent(content) },
         )
     }
 }

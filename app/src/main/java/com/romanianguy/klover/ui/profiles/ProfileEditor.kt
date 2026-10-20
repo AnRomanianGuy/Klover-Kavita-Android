@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.DeleteOutline
@@ -62,6 +63,7 @@ import com.romanianguy.klover.data.profiles.SavedProfile
 import com.romanianguy.klover.data.profiles.importProfilePhoto
 import com.romanianguy.klover.data.repo.AuthRepository
 import com.romanianguy.klover.ui.common.PageSheet
+import com.romanianguy.klover.ui.events.LocalActiveEvent
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -122,6 +124,46 @@ fun ProfileToneRow(profile: SavedProfile, modifier: Modifier = Modifier) {
                 )
             }
         }
+    }
+}
+
+// while an event is on: the regular ring or the event's, each shown on the profile itself
+@Composable
+fun ProfileSeasonalRow(profile: SavedProfile, modifier: Modifier = Modifier) {
+    val event = LocalActiveEvent.current ?: return
+    val store = koinInject<ProfileStore>()
+    val scheme = MaterialTheme.colorScheme
+    val name = stringResource(R.string.profile_seasonal_halloween)
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(stringResource(R.string.profile_seasonal, name), style = MaterialTheme.typography.titleSmall)
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            for (on in listOf(false, true)) {
+                val chosen = (profile.seasonal == event.id) == on
+                val label = if (on) name else stringResource(R.string.profile_seasonal_regular)
+                Column(
+                    Modifier
+                        .clip(RoundedCornerShape(18.dp))
+                        .then(if (chosen) Modifier.border(2.dp, scheme.onSurface.copy(alpha = 0.85f), RoundedCornerShape(18.dp)) else Modifier)
+                        .clickable(role = Role.RadioButton) { store.setSeasonal(profile.key, if (on) event.id else null) }
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                        .semantics {
+                            contentDescription = label
+                            selected = chosen
+                            role = Role.RadioButton
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    ProfileAvatar(profile.copy(seasonal = if (on) event.id else null), size = 56.dp)
+                    Text(label, style = MaterialTheme.typography.labelMedium)
+                }
+            }
+        }
+        Text(
+            stringResource(R.string.profile_seasonal_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = scheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -222,6 +264,8 @@ fun ProfileEditorSheet(profile: SavedProfile, onDismiss: () -> Unit) {
                 ProfileShapeRow(live)
             }
 
+            ProfileSeasonalRow(live)
+
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(stringResource(R.string.profile_picture), style = MaterialTheme.typography.titleSmall)
                 Row(
@@ -286,5 +330,6 @@ fun ProfileSettingsSection() {
     )
     ProfileToneRow(profile, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
     ProfileShapeRow(profile, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+    ProfileSeasonalRow(profile, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
     if (editing) ProfileEditorSheet(profile) { editing = false }
 }

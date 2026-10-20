@@ -199,6 +199,7 @@ This is the part I care about most, and it was designed on a foldable rather tha
 | Reader | Background, tap zone size and swap, page turn, double-tap zoom level, pages on screen, direction by library |
 | Books | Typeface, size, spacing, margins, justify, hyphenation, indent, page colour |
 | Other | Start tab, haptics, cover size, hold-to-peek on or off |
+| Seasonal events | For Halloween (two weeks before the day and a week after): webs, a spider, bats and pumpkins on the screen, and a Halloween border for your profile picture that turns slowly. It never changes your colours, the reader is left alone, and one switch turns events off |
 
 Klover is English only for now.
 

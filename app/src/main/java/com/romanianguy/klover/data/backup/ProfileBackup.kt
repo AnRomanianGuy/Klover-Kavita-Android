@@ -14,6 +14,7 @@ data class ProfileBackup(
     val tone: Int = 0,
     val shape: Int = 0,
     val photo: String? = null,
+    val seasonal: String? = null,
 )
 
 // a photo is a few tens of kB; anything much bigger is not one of ours
@@ -25,7 +26,7 @@ internal fun ProfileStore.backupOf(key: String): ProfileBackup? {
         ?.let { File(photoDir, it) }
         ?.takeIf { it.isFile && it.length() in 1..MAX_PHOTO_BYTES }
         ?.let { runCatching { Base64.getEncoder().encodeToString(it.readBytes()) }.getOrNull() }
-    return ProfileBackup(profile.name, profile.tone, profile.shape, photo)
+    return ProfileBackup(profile.name, profile.tone, profile.shape, photo, profile.seasonal)
 }
 
 // puts the backed-up look on the profile [key]; a backup without a picture takes the picture off
@@ -34,6 +35,7 @@ internal fun ProfileStore.restore(key: String, backup: ProfileBackup, now: Long 
     rename(key, backup.name)
     setTone(key, backup.tone.coerceIn(0, PROFILE_TONES - 1))
     setShape(key, backup.shape.coerceIn(0, PROFILE_SHAPES - 1))
+    setSeasonal(key, backup.seasonal)
     val bytes = backup.photo?.let { runCatching { Base64.getDecoder().decode(it) }.getOrNull() }
         ?.takeIf { it.size in 1..MAX_PHOTO_BYTES }
     if (bytes == null) {

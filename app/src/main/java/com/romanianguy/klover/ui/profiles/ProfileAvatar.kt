@@ -1,8 +1,15 @@
 package com.romanianguy.klover.ui.profiles
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ColorScheme
@@ -20,9 +27,20 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.SweepGradientShader
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -37,6 +55,10 @@ import com.romanianguy.klover.data.profiles.PROFILE_SHAPES
 import com.romanianguy.klover.data.profiles.PROFILE_TONES
 import com.romanianguy.klover.data.profiles.ProfileStore
 import com.romanianguy.klover.data.profiles.SavedProfile
+import com.romanianguy.klover.ui.common.LocalAppSettings
+import com.romanianguy.klover.ui.common.reducedMotion
+import com.romanianguy.klover.ui.events.LocalActiveEvent
+import com.romanianguy.klover.ui.events.drawPumpkin
 import org.koin.compose.koinInject
 import java.io.File
 
@@ -108,26 +130,70 @@ fun ProfileAvatar(profile: SavedProfile, size: Dp, modifier: Modifier = Modifier
     val ring = (size * 0.055f).coerceAtLeast(2.dp)
     val gap = (size * 0.045f).coerceAtLeast(1.5.dp)
     val photo = remember(profile.photo) { profile.photo?.let { File(store.photoDir, it) }?.takeIf { it.isFile } }
-    Box(
-        modifier
-            .size(size)
-            .border(ring, tone, shape)
-            .padding(ring + gap)
-            .clip(shape)
-            .background(tone.copy(alpha = 0.16f).compositeOver(scheme.surface)),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (photo != null) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current).data(photo).memoryCacheKey(photo.name).build(),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.matchParentSize(),
-            )
-        } else {
-            val fontSize = with(LocalDensity.current) { (size * 0.42f).toSp() }
-            Text(profile.initial, color = tone, fontSize = fontSize, fontWeight = FontWeight.SemiBold)
+    // the border of the event that is on, if the profile chose it
+    val event = LocalActiveEvent.current
+    val seasonal = event != null && profile.seasonal == event.id
+    Box(modifier.size(size)) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .then(if (seasonal) Modifier.eventRing(ring, shape) else Modifier.border(ring, tone, shape))
+                .padding(ring + gap)
+                .clip(shape)
+                .background(tone.copy(alpha = 0.16f).compositeOver(scheme.surface)),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (photo != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current).data(photo).memoryCacheKey(photo.name).build(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.matchParentSize(),
+                )
+            } else {
+                val fontSize = with(LocalDensity.current) { (size * 0.42f).toSp() }
+                Text(profile.initial, color = tone, fontSize = fontSize, fontWeight = FontWeight.SemiBold)
+            }
         }
+        if (seasonal) {
+            Canvas(Modifier.matchParentSize()) { drawPumpkin(Offset(this.size.width * 0.8f, this.size.height * 0.8f), this.size.width * 0.38f) }
+        }
+    }
+}
+
+private val EventColors = listOf(
+    Color(0xFFF28C1C), Color(0xFF7A4DD6), Color(0xFFF28C1C), Color(0xFF7A4DD6), Color(0xFFF28C1C),
+)
+
+// the ring of a Halloween profile: orange and purple running slowly round it, and standing still with reduced motion.
+// The turn is read while drawing, so only the ring is drawn again, not the avatar composed again
+@Composable
+private fun Modifier.eventRing(ring: Dp, shape: Shape): Modifier {
+    val still = LocalAppSettings.current.reducedMotion()
+    val turn = if (still) {
+        null
+    } else {
+        rememberInfiniteTransition(label = "event-ring").animateFloat(
+            initialValue = 0f,
+            targetValue = 360f,
+            animationSpec = infiniteRepeatable(tween(6500, easing = LinearEasing)),
+            label = "turn",
+        )
+    }
+    return drawWithContent {
+        drawContent()
+        val outline = shape.createOutline(size, layoutDirection, this)
+        val path = when (outline) {
+            is Outline.Generic -> outline.path
+            is Outline.Rounded -> Path().apply { addRoundRect(outline.roundRect) }
+            is Outline.Rectangle -> Path().apply { addRect(outline.rect) }
+        }
+        val shader = SweepGradientShader(center, EventColors)
+        turn?.let { degrees ->
+            shader.setLocalMatrix(android.graphics.Matrix().apply { setRotate(degrees.value, center.x, center.y) })
+        }
+        // a stroke twice the ring wide, cut to the shape: the ring lies inside the edge, as a border does
+        clipPath(path) { drawOutline(outline, ShaderBrush(shader), style = Stroke(ring.toPx() * 2f)) }
     }
 }
 

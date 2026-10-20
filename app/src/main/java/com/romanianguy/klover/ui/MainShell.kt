@@ -61,6 +61,11 @@ import com.romanianguy.klover.ui.common.LocalAppSettings
 import com.romanianguy.klover.ui.common.LocalOpenTransition
 import com.romanianguy.klover.ui.common.rememberBookHinge
 import com.romanianguy.klover.ui.downloads.DownloadsScreen
+import com.romanianguy.klover.ui.events.DecorLayer
+import com.romanianguy.klover.ui.events.EventBackdrop
+import com.romanianguy.klover.ui.events.LocalActiveEvent
+import com.romanianguy.klover.ui.events.SeasonalDecor
+import com.romanianguy.klover.ui.events.eventPerch
 import com.romanianguy.klover.ui.garden.GardenScreen
 import com.romanianguy.klover.ui.history.HistoryScreen
 import com.romanianguy.klover.ui.home.HomeScreen
@@ -173,11 +178,21 @@ fun MainShell(startTab: TopLevelDestination = TopLevelDestination.Home) {
     ) {
         // camera cutout and rotated side bar: one padding so content clears them like the top bars do
         val horizontalSides = if (suiteType.toString().contains("Rail")) WindowInsetsSides.End else WindowInsetsSides.Horizontal
+        // with a book open the contents page is left alone and the decorations go on the screen
+        val screenStart = with(density) { ((bookHinge ?: lastHinge.value)?.right ?: 0f).toDp() } * bookProgress.coerceIn(0f, 1f)
         Box(
             Modifier
                 .fillMaxSize()
                 .then(if (inReader) Modifier else Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(horizontalSides))),
         ) {
+            if (!inReader) {
+                SeasonalDecor(
+                    DecorLayer.Bottom,
+                    bottomInset = if (showFloatingBar) FloatingBarFootprint + systemBarInset else systemBarInset,
+                    startX = screenStart,
+                    perched = showFloatingBar,
+                )
+            }
             CompositionLocalProvider(
                 LocalFloatingBarInset provides if (showFloatingBar) FloatingBarFootprint + systemBarInset else 0.dp,
             ) {
@@ -210,6 +225,7 @@ fun MainShell(startTab: TopLevelDestination = TopLevelDestination.Home) {
                 CompositionLocalProvider(
                     LocalProfilePicker provides if (bookMode) null else openProfilePicker,
                 ) {
+                EventBackdrop(clear = LocalActiveEvent.current != null && !inReader) {
                 NavDisplay(
                     backStack = navigator.backStack,
                     // Every tab root is in the list, so NavDisplay always intercepts Back; at the Home root we close
@@ -284,8 +300,13 @@ fun MainShell(startTab: TopLevelDestination = TopLevelDestination.Home) {
                     },
                 )
                 }
+                }
                     }
                 }
+            }
+
+            if (!inReader) {
+                SeasonalDecor(DecorLayer.Top, bottomInset = 0.dp, startX = screenStart)
             }
 
             AnimatedVisibility(
@@ -301,7 +322,8 @@ fun MainShell(startTab: TopLevelDestination = TopLevelDestination.Home) {
                     onSelect = navigator::select,
                     modifier = Modifier
                         .windowInsetsPadding(WindowInsets.navigationBars)
-                        .padding(bottom = 16.dp),
+                        .padding(bottom = 16.dp)
+                        .eventPerch(),
                 )
             }
         }
