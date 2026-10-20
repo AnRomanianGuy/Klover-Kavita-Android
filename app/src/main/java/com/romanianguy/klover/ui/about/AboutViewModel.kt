@@ -9,6 +9,7 @@ import com.romanianguy.klover.data.session.SessionManager
 import com.romanianguy.klover.data.update.CheckResult
 import com.romanianguy.klover.data.update.UpdateChecker
 import com.romanianguy.klover.data.update.UpdateInfo
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -23,6 +24,8 @@ data class AboutUi(
     // what the last "Check now" found; null before it was pressed
     val checkResult: CheckResult? = null,
 )
+
+private const val MIN_CHECK_MS = 900L
 
 class AboutViewModel(
     private val sessions: SessionManager,
@@ -39,7 +42,10 @@ class AboutViewModel(
         _state.value = _state.value.copy(checking = true)
         updates.clearSkip()
         viewModelScope.launch {
+            // an answer in a few milliseconds would only flicker; the spinner stays long enough to be seen
+            val started = System.currentTimeMillis()
             val result = updates.check()
+            delay((MIN_CHECK_MS - (System.currentTimeMillis() - started)).coerceAtLeast(0))
             _state.value = _state.value.copy(checking = false, checkResult = result)
         }
     }

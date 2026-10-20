@@ -29,6 +29,7 @@
     <string name="about_licence">Apache License 2.0</string>
     <string name="about_section_updates">Updates</string>
     <string name="about_update_check">Check now</string>
+    <string name="about_update_checking_short">Checking…</string>
     <string name="about_update_checking">Looking for a newer version…</string>
     <string name="about_update_current">You have the newest version.</string>
     <string name="about_update_failed">Could not reach the releases page. Try again later.</string>

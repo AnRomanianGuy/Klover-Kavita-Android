@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
@@ -220,9 +221,13 @@ private fun UpdatesCard(viewModel: AboutViewModel, ui: AboutUi) {
         Text(status, style = MaterialTheme.typography.bodyMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(onClick = viewModel::checkForUpdate, enabled = !ui.checking) {
-                Text(stringResource(R.string.about_update_check))
+                if (ui.checking) {
+                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.size(8.dp))
+                }
+                Text(stringResource(if (ui.checking) R.string.about_update_checking_short else R.string.about_update_check))
             }
-            if (found != null) Button(onClick = { details = true }) { Text(stringResource(R.string.update_whats_new)) }
+            if (found != null && !ui.checking) Button(onClick = { details = true }) { Text(stringResource(R.string.update_whats_new)) }
         }
     }
     if (details) found?.let { UpdateDialog(it, onDismiss = { details = false }, onSkip = null) }
