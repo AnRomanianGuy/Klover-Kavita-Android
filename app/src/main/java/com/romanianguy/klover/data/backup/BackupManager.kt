@@ -3,10 +3,11 @@ package com.romanianguy.klover.data.backup
 import com.romanianguy.klover.data.network.KavitaJson
 import com.romanianguy.klover.data.prefs.SeriesReaderStore
 import com.romanianguy.klover.data.prefs.SettingsStore
+import com.romanianguy.klover.data.profiles.ProfileStore
 import com.romanianguy.klover.data.session.AccountStorage
 import kotlinx.serialization.json.JsonElement
 
-data class RestoreSummary(val files: Int, val settings: Int, val series: Int)
+data class RestoreSummary(val files: Int, val settings: Int, val series: Int, val profile: Boolean)
 
 // [ensure] are the stores that register themselves with the account storage when they are made: asking for them here
 // makes sure they all exist before the backup looks
@@ -14,6 +15,7 @@ class BackupManager(
     private val accounts: AccountStorage,
     private val settings: SettingsStore,
     private val series: SeriesReaderStore,
+    private val profiles: ProfileStore,
     private val appVersion: String,
     @Suppress("unused") private val ensure: List<Any> = emptyList(),
     private val now: () -> Long = System::currentTimeMillis,
@@ -34,6 +36,7 @@ class BackupManager(
             files = files,
             settings = settings.exportPrefs(),
             series = series.exportAll(),
+            profile = profiles.activeKey.value?.let { profiles.backupOf(it) },
         ).encode()
     }
 
@@ -46,10 +49,14 @@ class BackupManager(
             .mapValues { KavitaJson.encodeToString(JsonElement.serializer(), it.value) }
         if (texts.any { (name, json) -> !known.getValue(name).accepts(json) }) throw BackupException(BackupProblem.Unreadable)
         texts.forEach { (name, json) -> known.getValue(name).importJson(json) }
+        val look = backup.profile
+        val active = profiles.activeKey.value
+        if (look != null && active != null) profiles.restore(active, look)
         return RestoreSummary(
             files = texts.size,
             settings = settings.importPrefs(backup.settings),
             series = series.importAll(backup.series),
+            profile = look != null && active != null,
         )
     }
 }

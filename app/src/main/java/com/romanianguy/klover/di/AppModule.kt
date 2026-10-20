@@ -157,6 +157,7 @@ val appModule = module {
             accounts = get<AccountStorage>(),
             settings = get(),
             series = get(),
+            profiles = get(),
             appVersion = BuildConfig.VERSION_NAME,
             ensure = listOf(
                 get<ReadingStats>(), get<LastReadStore>(), get<ReadingHistory>(), get<Bookmarks>(), get<BadgeWatcher>(),

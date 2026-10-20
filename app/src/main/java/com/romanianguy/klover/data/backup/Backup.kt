@@ -38,6 +38,7 @@ data class BackupFile(
     val files: Map<String, JsonElement> = emptyMap(),
     val settings: Map<String, PrefEntry> = emptyMap(),
     val series: Map<String, String> = emptyMap(),
+    val profile: ProfileBackup? = null,
 )
 
 @Serializable
