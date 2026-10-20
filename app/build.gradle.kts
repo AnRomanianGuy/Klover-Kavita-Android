@@ -16,18 +16,20 @@ android {
         applicationId = "com.romanianguy.klover"
         minSdk = 35
         targetSdk = 37
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // the releases page asked for a newer version; -PkloverUpdateUrl points it at a test server
         val updateUrl = providers.gradleProperty("kloverUpdateUrl").orNull
             ?: "https://api.github.com/repos/AnRomanianGuy/Klover-Kavita-Android/releases?per_page=10"
-        buildConfigField("String", "UPDATE_URL", "\"$updateUrl\"")
+        buildConfigField("String", "UPDATE_URL", if (providers.gradleProperty("kloverFdroid").isPresent) "\"\"" else "\"$updateUrl\"")
         // -PkloverFdroid (the F-Droid recipe): no update announcement, because the store brings the updates, and an
         // unsigned release APK for the store to sign
         buildConfigField("boolean", "UPDATE_CHECK", (!providers.gradleProperty("kloverFdroid").isPresent).toString())
+        // the same build also leaves out the MangaDex chapter-name lookup, so it talks to nothing but the person's server
+        buildConfigField("boolean", "CHAPTER_LOOKUP", (!providers.gradleProperty("kloverFdroid").isPresent).toString())
     }
 
     // keystore.properties (not in the repo): storeFile, storePassword, keyAlias, keyPassword. Without it release uses the debug key

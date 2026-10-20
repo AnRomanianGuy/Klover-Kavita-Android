@@ -1,5 +1,5 @@
 # Draft of the F-Droid recipe (it lives in https://gitlab.com/fdroid/fdroiddata as metadata/com.romanianguy.klover.yml, sent as a merge request, not read from this repository).
-# The build line is for the first release that has the -PkloverFdroid switch (v1.2); fill in the real numbers when it is tagged.
+# The build line is for the first release that has the -PkloverFdroid switch (v1.1.1). F-Droid finds later releases by their tags (v + versionName).
 Categories:
   - Reading
 License: Apache-2.0
@@ -15,9 +15,9 @@ RepoType: git
 Repo: https://github.com/AnRomanianGuy/Klover-Kavita-Android.git
 
 Builds:
-  - versionName: '1.2'
+  - versionName: '1.1.1'
     versionCode: 3
-    commit: v1.2
+    commit: v1.1.1
     subdir: app
     sudo:
       - apt-get update
@@ -34,5 +34,5 @@ Builds:
 
 AutoUpdateMode: Version v%v
 UpdateCheckMode: Tags
-CurrentVersion: '1.2'
+CurrentVersion: '1.1.1'
 CurrentVersionCode: 3

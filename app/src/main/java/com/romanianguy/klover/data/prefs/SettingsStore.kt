@@ -330,7 +330,7 @@ internal fun Preferences.toAppSettings(): AppSettings {
         downloadParallel = (this[PrefKeys.DOWNLOAD_PARALLEL] ?: defaults.downloadParallel).coerceIn(1, 3),
         autoDeleteRead = this[PrefKeys.AUTO_DELETE_READ] ?: defaults.autoDeleteRead,
         smartDownloads = this[PrefKeys.SMART_DOWNLOADS] ?: defaults.smartDownloads,
-        chapterLookup = this[PrefKeys.CHAPTER_LOOKUP] ?: defaults.chapterLookup,
+        chapterLookup = BuildConfig.CHAPTER_LOOKUP && (this[PrefKeys.CHAPTER_LOOKUP] ?: defaults.chapterLookup),
         smartAhead = (this[PrefKeys.SMART_AHEAD] ?: defaults.smartAhead).coerceIn(1, 5),
         smartCleanup = this[PrefKeys.SMART_CLEANUP] ?: defaults.smartCleanup,
         queueMarks = this[PrefKeys.QUEUE_MARKS] ?: defaults.queueMarks,

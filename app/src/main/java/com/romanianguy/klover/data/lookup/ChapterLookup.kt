@@ -1,5 +1,6 @@
 package com.romanianguy.klover.data.lookup
 
+import com.romanianguy.klover.BuildConfig
 import com.romanianguy.klover.data.chapters.InnerChapter
 import com.romanianguy.klover.data.network.KavitaJson
 import kotlinx.coroutines.Dispatchers
@@ -123,6 +124,7 @@ class ChapterLookup(
     private val listSerializer = ListSerializer(LookupChapter.serializer())
 
     suspend fun volumeChapters(titles: List<String>, volume: Int, network: Boolean): List<LookupChapter>? {
+        if (!BuildConfig.CHAPTER_LOOKUP) return null
         val usable = titles.map { it.trim() }.filter { it.isNotEmpty() }.distinct()
         if (usable.isEmpty()) return null
         val file = File(cacheDir, key(usable.first(), volume) + ".json")

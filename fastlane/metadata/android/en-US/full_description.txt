@@ -34,6 +34,6 @@ Klover is an unofficial Android app for people who run a <a href="https://www.ka
 </ul>
 
 <b>Private</b>
-There are no analytics, no ads and no crash reporting. Your sign-in is kept encrypted with the Android Keystore. The app talks to your Kavita server, plus an optional lookup of chapter names in MangaDex's public catalogue that you can switch off.
+There are no analytics, no ads and no crash reporting. Your sign-in is kept encrypted with the Android Keystore. The app talks to your Kavita server and nothing else.
 
 Klover is not affiliated with Kavita. It was made with the help of an AI coding assistant; the README says how.

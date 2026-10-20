@@ -562,7 +562,7 @@ private fun ReaderTab(settings: AppSettings, vm: SettingsViewModel) {
             checked = settings.updateCheck,
             onChange = { vm.set(PrefKeys.UPDATE_CHECK, it) },
         )
-        SwitchSetting(
+        if (BuildConfig.CHAPTER_LOOKUP) SwitchSetting(
             title = R.string.settings_chapter_lookup,
             hint = R.string.settings_chapter_lookup_hint,
             checked = settings.chapterLookup,

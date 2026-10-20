@@ -34,6 +34,7 @@ web page in a wrapper). If you self-host your library and read on Android, it mi
 
 ## Contents
 
+- [What's new in 1.1.1](#whats-new-in-111)
 - [What's new in 1.1](#whats-new-in-11)
 - [Source code](#source-code)
 - [See it](#see-it)
@@ -55,6 +56,16 @@ web page in a wrapper). If you self-host your library and read on Android, it mi
 - [AI assistance](#ai-assistance)
 - [Feedback and contributing](#feedback-and-contributing)
 - [License](#license)
+
+---
+
+## What's new in 1.1.1
+
+- **Read aloud keeps going with the screen off.** It moves on from section to section by itself and shows as a media
+  control (notification, lock screen, quick settings) with the book's cover, previous and next sentence, and headset
+  buttons. Closing the reader ends it.
+- **Ready for Obtainium and F-Droid.** See [Other ways to get it](#other-ways-to-get-it). The F-Droid build has no
+  update announcement and no MangaDex lookup.
 
 ---
 
@@ -265,9 +276,9 @@ Not supported yet: see [known issues](#known-issues).
 
 ## Install
 
-Klover is published as an **APK on this repository's [Releases page](https://github.com/AnRomanianGuy/Klover-Kavita-Android/releases)**, the current one is **v1.1**. There is no store listing.
+Klover is published as an **APK on this repository's [Releases page](https://github.com/AnRomanianGuy/Klover-Kavita-Android/releases)**, the current one is **v1.1.1**. There is no store listing.
 
-1. Download `Klover-1.1.apk` on your phone from the Releases page.
+1. Download `Klover-1.1.1.apk` on your phone from the Releases page.
 2. Open it. Android will ask you to allow installs from that app (your browser or file manager); allow it for this one install.
 3. Open Klover, enter your Kavita server address, and sign in with your username and password or an API key.
 
@@ -289,8 +300,8 @@ installed that one, uninstall it once before installing the current one.
   install cannot update each other; uninstall once to switch from one to the other (your data is in the backup file, see
   [Backup](#profiles-and-accounts)).
 - **Building for a store.** `./gradlew assembleRelease -PkloverFdroid=true` makes an unsigned release APK for the store to
-  sign, without the update announcement (a store does the updating) and without the dependency block Google's plugin
-  adds. The store listing text is in `fastlane/metadata/android/`.
+  sign, without the update announcement (a store does the updating), without the MangaDex chapter-name lookup (so it
+  talks to your server and nothing else) and without the dependency block Google's plugin adds. The store listing text is in `fastlane/metadata/android/`.
 
 ---
 
@@ -314,7 +325,7 @@ reading stats and time-left estimates, themes, and a calmer start-up.
 
 Next, roughly in this order. These are ideas, not promises, and there are no dates:
 
-- [x] **First release: a downloadable APK on GitHub Releases** (v1.0, early; v1.1 is out)
+- [x] **First release: a downloadable APK on GitHub Releases** (v1.0, early)
 - [x] Publish the source code
 - [x] Sharper PDF zoom (the visible part is rendered again at screen resolution)
 - [x] Update announcement: a note in the app when a newer version is on GitHub (can be switched off)
