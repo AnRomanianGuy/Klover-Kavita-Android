@@ -34,6 +34,7 @@ web page in a wrapper). If you self-host your library and read on Android, it mi
 
 ## Contents
 
+- [What's new in 1.1](#whats-new-in-11)
 - [Source code](#source-code)
 - [See it](#see-it)
 - [Features](#features)
@@ -54,6 +55,23 @@ web page in a wrapper). If you self-host your library and read on Android, it mi
 - [AI assistance](#ai-assistance)
 - [Feedback and contributing](#feedback-and-contributing)
 - [License](#license)
+
+---
+
+## What's new in 1.1
+
+- **Update announcement.** When a newer Klover is on the Releases page, a card on Home says so and shows the release
+  notes, with a button to download it and one to skip that version. About has a "Check now" button. It is a setting you
+  can turn off, nothing about you is sent, and nothing is installed by itself.
+- **Backup.** Export your streak, clovers, badges, stats, time-left learning, bookmarks, settings and profile look to one
+  file, and import it on a new phone or after a reinstall.
+- **A much more capable EPUB reader.** It now follows a good part of the book's CSS (alignment, indents, margins, colours,
+  sizes), draws tables and SVG pictures, and keeps covers that are wrapped in an SVG.
+- **Sharper PDF zoom.** The part of the page you are looking at is rendered again at screen resolution.
+- **Seasonal events.** Halloween brings webs, a friendly spider, bats and pumpkins to the app, the left page of the
+  foldable book mode included, and an animated border for your profile picture. Your colours never change, the reader
+  is left alone, and one switch turns events off.
+- **Fix:** a crash on foldables when scrolling a series that has loose chapters outside any volume.
 
 ---
 
@@ -245,13 +263,14 @@ Not supported yet: see [known issues](#known-issues).
 
 ## Install
 
-The first release, **v1.0**, is an early build published as an **APK on this repository's [Releases page](https://github.com/AnRomanianGuy/Klover-Kavita-Android/releases)**. There is no store listing.
+Klover is published as an **APK on this repository's [Releases page](https://github.com/AnRomanianGuy/Klover-Kavita-Android/releases)**, the current one is **v1.1**. There is no store listing.
 
-1. Download `Klover-1.0.apk` on your phone from the Releases page.
+1. Download `Klover-1.1.apk` on your phone from the Releases page.
 2. Open it. Android will ask you to allow installs from that app (your browser or file manager); allow it for this one install.
 3. Open Klover, enter your Kavita server address, and sign in with your username and password or an API key.
 
-Updates are manual for now: download the new APK and install it over the old one, your sign-in and data stay. Releases are
+Klover tells you when a new version is out (a card on Home, and it can be turned off). Updating is still by hand: download
+the new APK and install it over the old one, your sign-in and data stay. Releases are
 signed with the project's own key. The very first v1.0 upload was signed with a development key and was replaced; if you
 installed that one, uninstall it once before installing the current one.
 
@@ -265,7 +284,7 @@ installed that one, uninstall it once before installing the current one.
 - Koin, Retrofit 3, OkHttp 5, kotlinx.serialization, Coil 3, DataStore, jsoup
 - Android Keystore for secrets, baseline profile for start-up, `PdfRenderer` for PDFs, `TextToSpeech` for read aloud
 
-Roughly 350 unit tests cover the reading-time maths, download logic, offline queues, parsers and the fold layouts;
+Roughly 430 unit tests cover the reading-time maths, download logic, offline queues, parsers and the fold layouts;
 instrumented tests cover gestures and encryption.
 
 ---
@@ -277,7 +296,7 @@ reading stats and time-left estimates, themes, and a calmer start-up.
 
 Next, roughly in this order. These are ideas, not promises, and there are no dates:
 
-- [x] **First release: a downloadable APK on GitHub Releases** (v1.0, early)
+- [x] **First release: a downloadable APK on GitHub Releases** (v1.0, early; v1.1 is out)
 - [x] Publish the source code
 - [x] Sharper PDF zoom (the visible part is rendered again at screen resolution)
 - [x] Update announcement: a note in the app when a newer version is on GitHub (can be switched off)
