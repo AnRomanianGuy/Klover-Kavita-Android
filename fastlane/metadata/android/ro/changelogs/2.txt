@@ -1,0 +1,1 @@
+Anunț de actualizare, export și import de copii de rezervă, un cititor EPUB mult mai capabil (CSS, tabele, SVG), zoom PDF mai clar, decorațiuni de Halloween și o remediere pentru o eroare la serii cu capitole libere.

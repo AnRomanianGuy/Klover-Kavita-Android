@@ -1,0 +1,3 @@
+Citirea cu voce tare continuă și cu ecranul stins și apare ca un control media, cu coperta cărții, taste pentru căști și temporizator de somn.
+
+Versiunea F-Droid nu are anunțul de actualizare (se ocupă magazinul) și nici căutarea numelor de capitole în MangaDex: vorbește doar cu serverul tău.

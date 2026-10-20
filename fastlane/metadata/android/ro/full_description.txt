@@ -1,0 +1,39 @@
+Klover este o aplicație Android neoficială pentru cei care au un server <a href="https://www.kavitareader.com/">Kavita</a> și vor un cititor care se simte acasă pe telefon. Ai nevoie de propriul server Kavita ca să o folosești. Interfața aplicației este deocamdată doar în engleză.
+
+<b>Cititoare</b>
+<ul>
+<li>Manga, benzi desenate și webtoon, cu zone de atingere, zoom și dublu-tap, de la stânga la dreapta sau de la dreapta la stânga</li>
+<li>Un cititor EPUB nativ (fără web view) care urmează o mare parte din CSS-ul cărții și desenează tabele și imagini SVG</li>
+<li>PDF cu zoom clar</li>
+<li>Citire cu voce tare pentru cărți: continuă și cu ecranul stins și apare ca un control media, cu coperta, pe ecranul de blocare și în setările rapide</li>
+</ul>
+
+<b>Făcută pentru telefoane pliabile</b>
+<ul>
+<li>Două pagini deodată când e desfăcut și pagini care se întorc ca hârtia când e ținut pe jumătate deschis, ca o carte</li>
+<li>Mod tabletop și machete care ocolesc pliul</li>
+</ul>
+
+<b>Offline și sincronizat</b>
+<ul>
+<li>Descărcări pentru serii întregi, doar pe Wi-Fi, cu pauză și reluare și ștergere după citire</li>
+<li>Progresul tău se întoarce în Kavita, chiar și când citești offline</li>
+</ul>
+
+<b>Statistici de citit</b>
+<ul>
+<li>O estimare a „timpului rămas” care învață cât de repede citești fiecare fel de conținut</li>
+<li>Serii de zile, un obiectiv săptămânal și o grădină de trifoi care crește pe măsură ce termini capitole</li>
+<li>Copie de rezervă: exportă și importă seria, statisticile, semnele de carte, setările și aspectul profilului</li>
+</ul>
+
+<b>A ta</b>
+<ul>
+<li>Mai multe conturi pe același dispozitiv, design Material 3 Expressive, culorile fundalului sau ale tale, negru pur</li>
+<li>Decorațiuni de sezon în jurul sărbătorilor și un comutator ca să le oprești</li>
+</ul>
+
+<b>Privat</b>
+Fără analiză, fără reclame și fără raportare de erori. Datele tale de conectare sunt păstrate criptat cu Android Keystore. Aplicația vorbește cu serverul tău Kavita și cu nimic altceva.
+
+Klover nu este afiliată cu Kavita. A fost făcută cu ajutorul unui asistent de programare cu IA; README-ul spune cum.
