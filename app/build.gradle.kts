@@ -20,6 +20,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // the releases page asked for a newer version; -PkloverUpdateUrl points it at a test server
+        val updateUrl = providers.gradleProperty("kloverUpdateUrl").orNull
+            ?: "https://api.github.com/repos/AnRomanianGuy/Klover-Kavita-Android/releases?per_page=10"
+        buildConfigField("String", "UPDATE_URL", "\"$updateUrl\"")
     }
 
     // keystore.properties (not in the repo): storeFile, storePassword, keyAlias, keyPassword. Without it release uses the debug key

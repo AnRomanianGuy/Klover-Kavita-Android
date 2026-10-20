@@ -59,6 +59,9 @@ import com.romanianguy.klover.data.stats.Speed
 import com.romanianguy.klover.data.stats.Steadiness
 import com.romanianguy.klover.data.stats.overallProfile
 import com.romanianguy.klover.data.stats.profile
+import com.romanianguy.klover.data.update.CheckResult
+import com.romanianguy.klover.ui.common.LocalAppSettings
+import com.romanianguy.klover.ui.update.UpdateDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -151,6 +154,7 @@ fun AboutTab(viewModel: AboutViewModel = koinViewModel()) {
                 ),
             )
         }
+        UpdatesCard(viewModel, ui)
         EstimateCard()
         InfoCard(R.string.about_section_credits) {
             listOf(
@@ -197,6 +201,31 @@ fun AboutTab(viewModel: AboutViewModel = koinViewModel()) {
             modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
         )
     }
+}
+
+@Composable
+private fun UpdatesCard(viewModel: AboutViewModel, ui: AboutUi) {
+    val enabled = LocalAppSettings.current.updateCheck
+    val found by viewModel.announcement.collectAsStateWithLifecycle()
+    var details by remember { mutableStateOf(false) }
+    InfoCard(R.string.about_section_updates) {
+        val status = when {
+            ui.checking -> stringResource(R.string.about_update_checking)
+            ui.checkResult is CheckResult.Failed -> stringResource(R.string.about_update_failed)
+            found != null -> stringResource(R.string.update_available, found!!.version)
+            ui.checkResult is CheckResult.UpToDate -> stringResource(R.string.about_update_current)
+            !enabled -> stringResource(R.string.about_update_off)
+            else -> stringResource(R.string.about_update_idle)
+        }
+        Text(status, style = MaterialTheme.typography.bodyMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = viewModel::checkForUpdate, enabled = !ui.checking) {
+                Text(stringResource(R.string.about_update_check))
+            }
+            if (found != null) Button(onClick = { details = true }) { Text(stringResource(R.string.update_whats_new)) }
+        }
+    }
+    if (details) found?.let { UpdateDialog(it, onDismiss = { details = false }, onSkip = null) }
 }
 
 @Composable

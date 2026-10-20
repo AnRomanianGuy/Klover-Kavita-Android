@@ -620,6 +620,15 @@ class Handler(BaseHTTPRequestHandler):
         u = urlparse(self.path)
         q = parse_qs(u.query)
         p = u.path
+        if p == "/repos/AnRomanianGuy/Klover-Kavita-Android/releases":
+            # the app's update check: a newer version than the one installed
+            return self.send(200, [
+                {"tag_name": "v9.9", "name": "Klover 9.9", "draft": False, "prerelease": False,
+                 "html_url": "https://github.com/AnRomanianGuy/Klover-Kavita-Android/releases/tag/v9.9",
+                 "body": "What is new\n\n- Reading lists and collections\n- Quiet notifications for new chapters\n- Fixes for foldables"},
+                {"tag_name": "v1.0", "name": "Klover 1.0", "draft": False, "prerelease": True,
+                 "html_url": "https://github.com/AnRomanianGuy/Klover-Kavita-Android/releases/tag/v1.0", "body": "First release"},
+            ])
         if not self.authed():
             return self.send(401, "")
         g = lambda k: int(q.get(k, ["0"])[0])  # noqa: E731

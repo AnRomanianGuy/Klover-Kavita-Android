@@ -78,6 +78,8 @@
     <string name="settings_download_parallel">Downloads at the same time</string>
     <string name="settings_auto_delete">Delete after reading</string>
     <string name="settings_auto_delete_hint">Remove a downloaded chapter once you have read it to the end</string>
+    <string name="settings_update_check">Tell me about new versions</string>
+    <string name="settings_update_check_hint">Asks the Klover releases page on GitHub once or twice a day. Nothing about you is sent, and nothing is installed by itself.</string>
     <string name="settings_seasonal">Seasonal events</string>
     <string name="settings_seasonal_hint">Decorations and a special profile border around holidays, two weeks before and a week after. Your colours are never changed.</string>
     <string name="profile_seasonal">%1$s border</string>

@@ -206,10 +206,13 @@ Klover is English only for now.
 ### Privacy
 
 - Tokens and API keys are stored encrypted with a key in the Android Keystore.
-- No analytics, no ads, no crash-reporting service. The app talks to your Kavita server and nothing else, with one
-  optional exception: chapter names for volumes that are a single file can be looked up in MangaDex's public catalogue
-  (only the series title and volume number are sent, never your server or login). It is a setting you can turn off, and
-  in incognito it only uses what was found earlier.
+- No analytics, no ads, no crash-reporting service. The app talks to your Kavita server and nothing else, with two
+  optional exceptions, each a setting you can turn off:
+  - chapter names for volumes that are a single file can be looked up in MangaDex's public catalogue (only the series
+    title and volume number are sent, never your server or login). In incognito it only uses what was found earlier.
+  - a check for a newer Klover: the app reads this repository's public releases page once or twice a day and shows a
+    card on Home when a newer version is out. Nothing about you is sent, and nothing is installed by itself: the card
+    opens the release page and you decide.
 - **Incognito reading:** no progress sent to the server or kept on the device, nothing counted in stats, and the
   time-left estimate learns nothing from it, including from books you download while it is on.
 - **Data saver:** covers are not loaded from the server and made-up covers stand in; hold a cover to load one anyway.
@@ -277,6 +280,22 @@ Next, roughly in this order. These are ideas, not promises, and there are no dat
 - [x] **First release: a downloadable APK on GitHub Releases** (v1.0, early)
 - [x] Publish the source code
 - [x] Sharper PDF zoom (the visible part is rendered again at screen resolution)
+- [x] Update announcement: a note in the app when a newer version is on GitHub (can be switched off)
+- [ ] Read aloud in the background, with lock-screen and notification controls and headset buttons
+- [ ] Quiet notifications when a series on Want to read gets a new chapter
+- [ ] Reading lists and collections
+- [ ] Search inside a book, and your own highlights and notes in EPUB
+- [ ] Footnote pop-ups and embedded fonts in EPUB
+- [ ] Comic guided view: panel by panel zoom
+- [ ] Manga tools: trim white borders, contrast tweaks
+- [ ] A dyslexia-friendly font and an accessibility pass (TalkBack labels, larger touch targets)
+- [ ] Automatic backup to a folder you pick
+- [ ] A shareable "year in reading" recap card
+- [ ] More seasonal events (St. Patrick's Day, Christmas, New Year, Valentine's)
+- [ ] Home screen widgets: continue reading and streak
+- [ ] Automatic builds and checks on GitHub for every push and release
+- [ ] More places to get it: IzzyOnDroid, F-Droid, Obtainium
+- [ ] A "copy diagnostics" button for bug reports, where you choose what to share
 - [ ] More languages (the UI is English only today)
 - [ ] Bookmarks in the EPUB reader (comics have them already)
 - [x] EPUB tables, SVG images and more of the book's CSS

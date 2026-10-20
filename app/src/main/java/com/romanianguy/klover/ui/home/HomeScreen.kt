@@ -95,6 +95,7 @@ import com.romanianguy.klover.ui.profiles.ProfileButton
 import com.romanianguy.klover.ui.stats.ContinueCard
 import com.romanianguy.klover.ui.stats.StatsCard
 import com.romanianguy.klover.ui.stats.rememberStatsSummary
+import com.romanianguy.klover.ui.update.UpdateCard
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -165,6 +166,9 @@ fun HomeScreen(
                     contentPadding = PaddingValues(bottom = 24.dp + LocalFloatingBarInset.current),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    item(key = "update") {
+                        UpdateCard(Modifier.padding(horizontal = 16.dp))
+                    }
                     if (homeSettings.incognito) {
                         item(key = "incognito") {
                             Surface(

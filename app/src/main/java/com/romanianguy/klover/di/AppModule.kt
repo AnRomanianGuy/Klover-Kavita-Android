@@ -35,6 +35,7 @@ import com.romanianguy.klover.data.session.SessionState
 import com.romanianguy.klover.data.stats.ReadingAccuracy
 import com.romanianguy.klover.data.stats.ReadingPace
 import com.romanianguy.klover.data.stats.ReadingStats
+import com.romanianguy.klover.data.update.UpdateChecker
 import com.romanianguy.klover.ui.about.AboutViewModel
 import com.romanianguy.klover.ui.downloads.DownloadsViewModel
 import com.romanianguy.klover.ui.home.HomeViewModel
@@ -126,6 +127,9 @@ val appModule = module {
             .build()
     }
     single { ChapterLookup(get(named("public")), File(androidContext().cacheDir, "lookup")) }
+    single {
+        UpdateChecker(get(named("public")), BuildConfig.UPDATE_URL, BuildConfig.VERSION_NAME, File(androidContext().filesDir, "update.json"))
+    }
     single { PdfCache(get(), File(androidContext().cacheDir, "pdf")) }
     // Reading statistics, pace and the accuracy of the estimates are kept per Kavita account.
     single<AccountStorage> { AccountFiles(File(androidContext().filesDir, "stats"), get(), get()) }
@@ -177,6 +181,6 @@ val appModule = module {
         ReaderViewModel(params.get<ReaderArgs>(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     viewModel { DownloadsViewModel(get(), get()) }
-    viewModel { AboutViewModel(get(), get(), get()) }
+    viewModel { AboutViewModel(get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get(), androidContext(), get(), get()) }
 }

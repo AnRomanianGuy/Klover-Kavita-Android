@@ -57,6 +57,7 @@ import androidx.window.core.layout.WindowSizeClass
 import com.romanianguy.klover.R
 import com.romanianguy.klover.data.prefs.MotionStyle
 import com.romanianguy.klover.data.profiles.ProfileStore
+import com.romanianguy.klover.data.update.UpdateChecker
 import com.romanianguy.klover.ui.common.LocalAppSettings
 import com.romanianguy.klover.ui.common.LocalOpenTransition
 import com.romanianguy.klover.ui.common.rememberBookHinge
@@ -121,6 +122,13 @@ fun MainShell(startTab: TopLevelDestination = TopLevelDestination.Home) {
         if (activeAccount == null) return@LaunchedEffect
         LaunchRequests.pending.value = null
         if (request.account == activeAccount) navigator.push(ReaderKey(request.chapterId))
+    }
+
+    // once the app is up and the setting is on, ask whether a newer version is out (at most every twelve hours)
+    val updateChecks = LocalAppSettings.current.updateCheck
+    val updates = koinInject<UpdateChecker>()
+    LaunchedEffect(updateChecks) {
+        if (updateChecks) updates.checkIfDue()
     }
 
     val adaptiveInfo = currentWindowAdaptiveInfoV2()

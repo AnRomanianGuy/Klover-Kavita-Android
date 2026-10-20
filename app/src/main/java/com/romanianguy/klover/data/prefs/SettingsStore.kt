@@ -153,6 +153,7 @@ data class AppSettings(
     val bookHyphenate: Boolean = true,
     val bookStyles: Boolean = true,
     val seasonalEvents: Boolean = true,
+    val updateCheck: Boolean = true,
 
     val downloadWifiOnly: Boolean = true,
     val downloadParallel: Int = 2,
@@ -232,6 +233,7 @@ object PrefKeys {
     val BOOK_HYPHENATE = booleanPreferencesKey("book_hyphenate")
     val BOOK_STYLES = booleanPreferencesKey("book_styles")
     val SEASONAL_EVENTS = booleanPreferencesKey("seasonal_events")
+    val UPDATE_CHECK = booleanPreferencesKey("update_check")
 
     val FONT_SCALE = floatPreferencesKey("book_font_scale")
     val BOOK_FONT = stringPreferencesKey("book_font")
@@ -320,6 +322,7 @@ internal fun Preferences.toAppSettings(): AppSettings {
         bookHyphenate = this[PrefKeys.BOOK_HYPHENATE] ?: defaults.bookHyphenate,
         bookStyles = this[PrefKeys.BOOK_STYLES] ?: defaults.bookStyles,
         seasonalEvents = this[PrefKeys.SEASONAL_EVENTS] ?: defaults.seasonalEvents,
+        updateCheck = this[PrefKeys.UPDATE_CHECK] ?: defaults.updateCheck,
 
         downloadWifiOnly = this[PrefKeys.DOWNLOAD_WIFI_ONLY] ?: defaults.downloadWifiOnly,
         downloadParallel = (this[PrefKeys.DOWNLOAD_PARALLEL] ?: defaults.downloadParallel).coerceIn(1, 3),

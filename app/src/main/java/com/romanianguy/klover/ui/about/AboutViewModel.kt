@@ -6,6 +6,9 @@ import com.romanianguy.klover.data.downloads.DownloadManager
 import com.romanianguy.klover.data.network.KavitaApi
 import com.romanianguy.klover.data.session.Session
 import com.romanianguy.klover.data.session.SessionManager
+import com.romanianguy.klover.data.update.CheckResult
+import com.romanianguy.klover.data.update.UpdateChecker
+import com.romanianguy.klover.data.update.UpdateInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -16,15 +19,30 @@ data class AboutUi(
     val serverVersion: String? = null,
     val downloadChapters: Int = 0,
     val downloadBytes: Long = 0,
+    val checking: Boolean = false,
+    // what the last "Check now" found; null before it was pressed
+    val checkResult: CheckResult? = null,
 )
 
 class AboutViewModel(
     private val sessions: SessionManager,
     private val api: KavitaApi,
     private val downloads: DownloadManager,
+    private val updates: UpdateChecker,
 ) : ViewModel() {
     private val _state = MutableStateFlow(AboutUi(session = sessions.current))
     val state: StateFlow<AboutUi> = _state
+    val announcement: StateFlow<UpdateInfo?> = updates.announcement
+
+    fun checkForUpdate() {
+        if (_state.value.checking) return
+        _state.value = _state.value.copy(checking = true)
+        updates.clearSkip()
+        viewModelScope.launch {
+            val result = updates.check()
+            _state.value = _state.value.copy(checking = false, checkResult = result)
+        }
+    }
 
     init {
         viewModelScope.launch {
