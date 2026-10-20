@@ -13,6 +13,8 @@
 
 <img src="docs/media/hero.gif" alt="Klover, a Kavita client for Android, showing the library, a comic in the reader and the foldable book mode" width="720">
 
+<a href="https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/AnRomanianGuy/Klover-Kavita-Android"><img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png" alt="Get it on Obtainium" height="64"></a>
+
 </div>
 
 Klover is an unofficial Android app for people who run a [Kavita](https://www.kavitareader.com/) server and want a
@@ -276,6 +278,12 @@ Not supported yet: see [known issues](#known-issues).
 
 ## Install
 
+<div align="center">
+
+<a href="https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/AnRomanianGuy/Klover-Kavita-Android"><img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png" alt="Get it on Obtainium" height="64"></a>
+
+</div>
+
 Klover is published as an **APK on this repository's [Releases page](https://github.com/AnRomanianGuy/Klover-Kavita-Android/releases)**, the current one is **v1.1.1**. There is no store listing.
 
 1. Download `Klover-1.1.1.apk` on your phone from the Releases page.
@@ -291,8 +299,8 @@ installed that one, uninstall it once before installing the current one.
 
 - **Obtainium.** Klover works with [Obtainium](https://obtainium.imranr.dev/), which watches this repository's Releases
   and installs new versions for you. In Obtainium choose *Add app* and paste
-  `https://github.com/AnRomanianGuy/Klover-Kavita-Android`, or
-  [tap here on the phone](https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/AnRomanianGuy/Klover-Kavita-Android).
+  `https://github.com/AnRomanianGuy/Klover-Kavita-Android`, or tap the badge above on the phone (it opens Obtainium with
+  Klover ready to add).
   It is the same APK, signed with the same key as the one you would download by hand. Obtainium then does the telling, so
   you can switch off Klover's own update card in Settings -> Account.
 - **F-Droid.** Being prepared: the build is ready for it (see below) and the recipe is drafted in `fdroid/`, but it is not
