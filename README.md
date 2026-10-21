@@ -15,7 +15,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](#license)
 [![Status](https://img.shields.io/badge/status-solo%20project%2C%20in%20active%20development-orange)](#roadmap)
 
-<a href="https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/AnRomanianGuy/Klover-Kavita-Android"><img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png" alt="Get it on Obtainium" height="64"></a>
+<a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fadd%2Fhttps%3A%2F%2Fgithub.com%2FAnRomanianGuy%2FKlover-Kavita-Android"><img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png" alt="Get it on Obtainium" height="64"></a>
 
 <img src="docs/media/hero.gif" alt="Klover, a Kavita client for Android, showing the library, a comic in the reader and the foldable book mode" width="720">
 
@@ -284,7 +284,7 @@ Not supported yet: see [known issues](#known-issues).
 
 <div align="center">
 
-<a href="https://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/AnRomanianGuy/Klover-Kavita-Android"><img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png" alt="Get it on Obtainium" height="64"></a>
+<a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fadd%2Fhttps%3A%2F%2Fgithub.com%2FAnRomanianGuy%2FKlover-Kavita-Android"><img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png" alt="Get it on Obtainium" height="64"></a>
 
 </div>
 
