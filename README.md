@@ -1,3 +1,7 @@
+> **Disclaimer: updates are paused for a while.** Klover is going through the F-Droid review, and publishing a new
+> version now would restart that review and delay the release on F-Droid. New releases will resume once Klover is
+> accepted. Bug reports are still welcome, they will be fixed in the next release.
+
 <div align="center">
 
 # Klover
